@@ -1,0 +1,19 @@
+package baltastefan.simulator.models;
+
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+@NoArgsConstructor
+@ToString
+@EqualsAndHashCode(callSuper = true)
+public class HourlyConsumerAggregation extends Aggregation
+{
+    public long meterID;
+
+    public HourlyConsumerAggregation(double activeDelta, double reactiveDelta, long meterID, Window window)
+    {
+        super(activeDelta, reactiveDelta, window);
+        this.meterID = meterID;
+    }
+}

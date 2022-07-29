@@ -1,0 +1,64 @@
+- nadzirati aktivnu i reaktivnu energiju
+	- potrosaci reaktivne energije su elektromotori i transformatori (valjda industrija)
+	- nadzirati ih po pojedinim gradovima
+	- odvojeno posmatrati industrijsku i stambenu potrosnju
+	
+- grafovi:
+	- za cijelu drzavu:
+		- line graph za aktivnu energiju u cijeloj drzavi
+		- line graph za reaktivnu energiju u cijeloj drzavi
+		- brojace za trenutne vrijednosti potrosnje aktivne i reaktivne energije u drzavi
+	- za konkretni grad:
+		- line graph za aktivnu energiju u konkretnom gradu
+		- line graph za reaktivnu energiju u konkretnom gradu
+		- brojace za trenutne vrijednosti potrosnje aktivne i reaktivne energije u gradu
+	- mapa - na hover grada prikazuje trenutne vrijednosti potrosnje aktivne i reaktivne energije u tom gradu
+		- na klik se prebacuje na grafike za taj grad (grafovi za konkretni grad opisani iznad)
+		
+	- mozda je bolje imati jedan graf po satima, drugi za minute trenutnog sata i za svaki interval od 3 sekunde u trenutnoj minuti?
+		
+Sema poruka od mjerila:
+	- long meterID
+	- long cityID
+	- String cityName // da li je ovo potrebno?
+	- long timestamp // unix timestamp; oznacava vrijeme kada je izvrseno mjerenje
+	- double activeDelta
+	- double reactiveDelta // delte govore koliko je energije potroseno od posljednjeg mjerenja
+	
+Sema poruke za vremensku prognozu:
+	- long cityID
+	- long timestamp // vrijeme u kojem je prijavljena ova prognoza
+	- double temperature // temperatura u stepenima Celzijusevim
+	- double windSpeed // u km/h (km na sat)
+	- double humidity // u procentima
+	
+	
+Uloga Spark-a:
+	- vrsi agregacije po gradovima (rezultat je tabela s onoliko redova koliko je gradova, navode se aktivna i reaktivna potrosnja)
+	- vrsi agregaciju na nivou drzave (rezultat je tabela sa samo jednim redom, navode se aktivna i reaktivna potrosnja)
+	- vrsi agregaciju po potrosacu na nivou sata (za svaki sat se navodi ukupna potrosnja aktivne i reaktivne energije) // KAKO OVO IZVESTI???
+	
+Pitanja:
+	1)Trebam li vrsiti checkpointing (cuvanje rezultata kako se ne bi vrsile agregacije od pocetka cijelog skupa podataka)?
+	2)Sta je Spark master cvor i kako se razlikuje od worker cvorova?
+	3)Kako da vrsim agregacije po satima?Isto pitanje i za agregiranje svih podataka iz jednog dana kako bi se rezultati uploadovali na object storage.
+		- jedno rjesenje je da se periodicno pokrece Spark job koji bi uzimao samo one poruke koji su se desili u prethodnom satu/danu.
+	4)Kada promjena podataka u window-u prijavljuje rezultat?Po isteku watermarka ili kad god se promjeni vrijednost?Ako se vrsi po promjeni vrijednosti, sta se onda desava kod sliding windowa?
+	
+Za uraditi:
+	1)Uocavati anomalije kao sto je prijavljivanje nize vrijednosti mjerila u odnosu na prethodno prijavljivanje.
+	
+Ostalo:
+https://stackoverflow.com/questions/63952941/spark-structured-streaming-output-result-at-the-end-of-tumbling-window-and-not
+https://stackoverflow.com/questions/67161781/spark-structured-streaming-reading-timestamp-from-file-using-schema
+
+
+Iznimno vazno:
+	1)Window-i su poravnati na pocetak sekunde/minute/sata.Objasnjenje: neka je window duzine 4 sekunde.Ako se dogadjaj desi u 54. sekundi, on ce pripadati window-u [52, 56].
+	  To je iz razloga sto ce sljedeci window biti [56, 0], odnosno samo se sa takvim windowima moze doci do okrugle sljedece vise minute.
+	  
+	  
+Za napomenuti u radu:
+	1)Spring Kafka zahtijeva zaglavlje koje navodi tip poruke.To je problem ako producer nije takodje Spring Kafka.
+	2)Granice window-a se postavljaju tako da gornja granica bude okrugla
+		-npr. ako se koristi window od 7 sekundi, prvi window ce biti od 4. sekunde do 11, a posljednji window unutar minute ce biti od 53. sekunde do 60. sekunde.
