@@ -20,6 +20,9 @@ public class App
     private static final int countryWindowDurationSeconds = 3;
     private static final int totalByCityWindowDurationSeconds = 3;
 
+    private static final String checkpointLocation = "C:\\Users\\Korisnik\\Desktop\\Spark checkpoint\\";
+    private static final String kafkaBootstrapServers = "127.0.0.1:9092";
+    private static final String inputTopicName = "input";
 
     public static void main(String[] args) throws TimeoutException, StreamingQueryException
     {
@@ -35,27 +38,27 @@ public class App
                 .appName("Simple energy aggregator Spark application")
                 .config("spark.scheduler.mode", "FAIR")
                 .config("spark.sql.shuffle.partitions", 5)
-                .config("spark.sql.streaming.checkpointLocation", "C:\\Users\\Korisnik\\Desktop\\Spark checkpoint\\")
+                .config("spark.sql.streaming.checkpointLocation", checkpointLocation)
                 .config("spark.sql.session.timeZone", "UTC")
                 //.master("local")
                 .getOrCreate();
         spark.sparkContext().setLogLevel("ERROR");
 
         StructType messageSchema =  new StructType()
-                .add("meterID", DataTypes.LongType)
-                .add("cityID", DataTypes.LongType)
+                .add("meterID", DataTypes.LongType, false)
+                .add("cityID", DataTypes.LongType, false)
                 .add("cityName", DataTypes.StringType)
-                .add("timestamp", DataTypes.LongType)
-                .add("activeDelta", DataTypes.DoubleType)
-                .add("reactiveDelta", DataTypes.DoubleType);
+                .add("timestamp", DataTypes.LongType, false)
+                .add("activeDelta", DataTypes.DoubleType, false)
+                .add("reactiveDelta", DataTypes.DoubleType, false);
 
         //messageSchema.printTreeString();
 
         Dataset<Row> rowData = spark
                 .readStream()
                 .format("kafka")
-                .option("kafka.bootstrap.servers", "127.0.0.1:9092")
-                .option("subscribe", "input")
+                .option("kafka.bootstrap.servers", kafkaBootstrapServers)
+                .option("subscribe", inputTopicName)
                 //.option("startingOffsets", "earliest")
                 .load()
                 .select(from_json(col("value").cast(DataTypes.StringType), messageSchema).alias("parsed_value"))
@@ -161,7 +164,7 @@ public class App
                 .outputMode(OutputMode.Update())
                 .format("kafka")
                 //.option("truncate", false)
-                .option("kafka.bootstrap.servers", "127.0.0.1:9092")
+                .option("kafka.bootstrap.servers", kafkaBootstrapServers)
                 .option("topic", hourlyConsumerTopic)
                 .start();
         StreamingQuery totalByCityQuery = totalByCity
@@ -170,7 +173,7 @@ public class App
                 .outputMode(OutputMode.Update())
                 .format("kafka")
                 //.option("truncate", false)
-                .option("kafka.bootstrap.servers", "127.0.0.1:9092")
+                .option("kafka.bootstrap.servers", kafkaBootstrapServers)
                 .option("topic", totalByCityTopic)
                 .start();
         StreamingQuery totalConsumptionQuery = totalConsumption
@@ -179,7 +182,7 @@ public class App
                 .outputMode(OutputMode.Update())
                 .format("kafka")
                 //.option("truncate", false)
-                .option("kafka.bootstrap.servers", "127.0.0.1:9092")
+                .option("kafka.bootstrap.servers", kafkaBootstrapServers)
                 .option("topic", totalConsumptionTopic)
                 .start();
 
