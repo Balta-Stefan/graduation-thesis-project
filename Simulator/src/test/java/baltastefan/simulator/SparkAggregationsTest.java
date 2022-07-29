@@ -29,6 +29,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestPropertySource(locations = "classpath:test.properties")
+/*
+* These tests aren't correct for certain window lengths.For example, when using a 7-second window, Spark will introduce a 2-second difference.
+* */
 public class SparkAggregationsTest
 {
     @Value("${city-aggregations-window-duration-seconds}")
