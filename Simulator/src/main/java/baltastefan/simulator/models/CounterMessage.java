@@ -11,7 +11,6 @@ public class CounterMessage
 {
     public long meterID;
     public long cityID;
-    public String cityName;
     public long timestamp;
     public double activeDelta;
     public double reactiveDelta;

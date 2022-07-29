@@ -29,7 +29,7 @@ public class App
         // https://spark.apache.org/docs/latest/submitting-applications.html#master-urls
         // https://databricks.com/blog/2017/04/26/processing-data-in-apache-kafka-with-structured-streaming-in-apache-spark-2-2.html
 
-        // C:/Users/Korisnik/Desktop/spark-3.3.0-bin-hadoop2/bin/spark-submit.cmd --master local --deploy-mode client --class simpleaggregator.App --name Testiranje --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0 "D:\Diplomski rad\Prakticni dio\Simple energy aggregator\target\simple-energy-aggregator-1.0-SNAPSHOT.jar"
+        // C:/Users/Korisnik/Desktop/spark-3.3.0-bin-hadoop3/bin/spark-submit.cmd --master local --deploy-mode client --class simpleaggregator.App --name Testiranje --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0 "D:\Diplomski rad\Prakticni dio\Simple energy aggregator\target\simple-energy-aggregator-1.0-SNAPSHOT.jar"
 
         // setup
 
@@ -47,7 +47,6 @@ public class App
         StructType messageSchema =  new StructType()
                 .add("meterID", DataTypes.LongType, false)
                 .add("cityID", DataTypes.LongType, false)
-                .add("cityName", DataTypes.StringType)
                 .add("timestamp", DataTypes.LongType, false)
                 .add("activeDelta", DataTypes.DoubleType, false)
                 .add("reactiveDelta", DataTypes.DoubleType, false);
