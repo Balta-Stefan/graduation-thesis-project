@@ -2,17 +2,15 @@ package baltastefan.simulator.services;
 
 import baltastefan.simulator.models.CounterMessage;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 
-//@KafkaListener(topics = "output", groupId = "#{T(java.util.UUID).randomUUID().toString()}", properties = {"spring.json.use.type.headers=false"})
 @Service
 public class Simulator
 {
@@ -22,13 +20,24 @@ public class Simulator
     @Value("${number-of-unique-cities}")
     private int numberOfUniqueCities;
 
+    @Value("${kafka.topic.input}")
+    private String inputTopicName;
+
+    @Value("${number-of-messages-per-interval}")
+    private int numberOfMessagesPerInterval;
+
     private List<Long> meterIds = new ArrayList<>();
     private List<Long> cityIds = new ArrayList<>();
     private Map<Long, Long> meterIdToCityIdMapper = new HashMap<>(); // key is meterId, value is cityId
     private final Map<Long, Double> totalConsumed = new HashMap<>(); // key is meterId
 
     private final Random rnd = new Random();
-    private final LocalDateTime currentDate = LocalDateTime.now();
+    private final KafkaTemplate<String, CounterMessage> kafkaTemplate;
+
+    public Simulator(KafkaTemplate<String, CounterMessage> kafkaTemplate)
+    {
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     private void generatorUtil(int numberOfUniqueIds, List<Long> list)
     {
@@ -76,60 +85,19 @@ public class Simulator
         return new CounterMessage(
                 meterId,
                 cityId,
-                null,
                 currentTimestamp,
                 activeDelta,
                 reactiveDelta,
                 consumedSoFar);
     }
 
-    /*
-    @PostConstruct
-    public void sendMockData()
+    @Scheduled(fixedDelayString = "${scheduling-rate-ms}")
+    public void simulate()
     {
-        ZoneId zoneId = ZoneId.systemDefault();
-
-        LocalDateTime.now().atZone(zoneId).toEpochSecond();
-
-        List<String> cities = Arrays.asList("Gradiska", "Banjaluka", "Sarajevo", "Zagreb", "Tuzla", "Mostar");
-        List<CounterMessage> messages = new ArrayList<>();
-
-        Random rnd = new Random();
-
-        for(int i = 0; i < 5; i++)
+        for(int i = 0; i < numberOfMessagesPerInterval; i++)
         {
-            CounterMessage msg = new CounterMessage(
-                    Math.abs(rnd.nextLong()),
-                    Math.abs(rnd.nextLong()),
-                    cities.get(rnd.nextInt(cities.size())),
-                    LocalDateTime.now().atZone(zoneId).toEpochSecond(),
-                    rnd.nextInt(50),
-                    rnd.nextInt(25),
-                    rnd.nextInt(15));
-            totalSimulatedActive += msg.activeDelta;
-            totalSimulatedReactive += msg.reactiveDelta;
-            totalSimulatedDelta += msg.totalConsumed;
-
-            kafkaTemplate.send(inputTopic, msg);
+            CounterMessage msg = generateMessage();
+            kafkaTemplate.send(inputTopicName, msg);
         }
     }
-
-
-    @KafkaListener(topics = "${kafka.topic.total-by-city}", groupId = "#{T(java.util.UUID).randomUUID().toString()}")
-    public void readCityAggregatedData(CityAggregations cityAggregations)
-    {
-        System.out.println("Received CityAggregations: " + cityAggregations);
-    }
-
-    @KafkaListener(topics = "${kafka.topic.total-consumption}", groupId = "#{T(java.util.UUID).randomUUID().toString()}")
-    public void readCountryAggregatedData(CountryAggregations countryAggregations)
-    {
-        System.out.println("Received CountryAggregations: " + countryAggregations);
-    }
-
-    @KafkaListener(topics = "${kafka.topic.hourly-by-consumer}", groupId = "#{T(java.util.UUID).randomUUID().toString()}")
-    public void readHourlyConsumerAggregateData(HourlyConsumerAggregation consumerAggregation)
-    {
-        System.out.println("Received HourlyConsumerAggregation: " + consumerAggregation);
-    }*/
 }
