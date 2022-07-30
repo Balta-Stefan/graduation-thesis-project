@@ -2,6 +2,7 @@ package baltastefan.simulator;
 
 import baltastefan.simulator.models.*;
 import baltastefan.simulator.services.Simulator;
+import baltastefan.simulator.testutils.TestUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -34,10 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 * */
 public class SparkAggregationsTest
 {
-    @Value("${city-aggregations-window-duration-seconds}")
-    private int cityAggregationsWindowDurationSeconds;
-    @Value("${country-aggregations-window-duration-seconds}")
-    private int countryAggregationsWindowDurationSeconds;
     private final long pollTimeoutSeconds = 10;
 
     private KafkaConsumer<String, CityAggregations> cityAggregationsKafkaConsumer;
@@ -55,6 +52,8 @@ public class SparkAggregationsTest
     private Simulator simulator;
 
 
+    @Value("${number-of-test-messages}")
+    private int numberOfTestMessages;
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String bootstrapServers;
 
@@ -128,119 +127,43 @@ public class SparkAggregationsTest
     /**
      * Works only when window duration is less than 1 minute
      */
-    private OffsetDateTime calculateLowerWindowBoundForSecondWindows(OffsetDateTime eventTimestamp, int windowDurationSeconds)
-    {
-        // windowStart = 60 - ceil((60-eventSecond)/windowDuration)*windowDuration
-        int windowStartSecond = (int)(60.0 - Math.ceil((60.0 - eventTimestamp.getSecond()) / windowDurationSeconds)*windowDurationSeconds);
-        OffsetDateTime windowStartTimestamp;
-
-        if(windowStartSecond < 0)
-        {
-            // window start is in the previous minute
-            windowStartSecond = 60 + windowStartSecond;
-            windowStartTimestamp = eventTimestamp.minusMinutes(1).withSecond(windowStartSecond);
-        }
-        else
-        {
-            windowStartTimestamp = eventTimestamp.withSecond(windowStartSecond);
-        }
-
-        return windowStartTimestamp;
-    }
-
-    private void prepareExpectedHourlyConsumerAggregations(OffsetDateTime eventTimestamp, CounterMessage msg, Map<HourlyConsumerAggregation,HourlyConsumerAggregation> hourlyConsumerAggregationsTestData)
-    {
-        // window is aligned by the hour
-        OffsetDateTime windowStart = eventTimestamp.withMinute(0).withSecond(0);
-        OffsetDateTime windowEnd = windowStart.plusHours(1);
-
-        Window window = new Window(windowStart.toEpochSecond(), windowEnd.toEpochSecond());
-        HourlyConsumerAggregation hourlyAggregation = new HourlyConsumerAggregation(msg.activeDelta, msg.reactiveDelta, msg.meterID, window);
-        HourlyConsumerAggregation tmpHourly = hourlyConsumerAggregationsTestData.get(hourlyAggregation);
-        if(tmpHourly == null)
-        {
-            hourlyConsumerAggregationsTestData.put(hourlyAggregation, hourlyAggregation);
-        }
-        else
-        {
-            tmpHourly.aggregatedActiveDelta += hourlyAggregation.aggregatedActiveDelta;
-            tmpHourly.aggregatedReactiveDelta += hourlyAggregation.aggregatedReactiveDelta;
-        }
-    }
-
-    private void prepareExpectedCountryAggregations(OffsetDateTime eventTimestamp, CounterMessage msg, Map<CountryAggregations,CountryAggregations> countryAggregationsTestData)
-    {
-        OffsetDateTime windowStart = calculateLowerWindowBoundForSecondWindows(eventTimestamp, countryAggregationsWindowDurationSeconds);
-        OffsetDateTime windowEnd = windowStart.plusSeconds(countryAggregationsWindowDurationSeconds);
-
-        Window window = new Window(windowStart.toEpochSecond(), windowEnd.toEpochSecond());
-        CountryAggregations aggregation = new CountryAggregations(msg.activeDelta, msg.reactiveDelta, window);
-        CountryAggregations tmpAggregation = countryAggregationsTestData.get(aggregation);
-        if(tmpAggregation == null)
-        {
-            countryAggregationsTestData.put(aggregation, aggregation);
-        }
-        else
-        {
-            tmpAggregation.aggregatedActiveDelta += aggregation.aggregatedActiveDelta;
-            tmpAggregation.aggregatedReactiveDelta += aggregation.aggregatedReactiveDelta;
-        }
-    }
-
-    private void prepareExpectedCityAggregations(OffsetDateTime eventTimestamp, CounterMessage msg, Map<CityAggregations, CityAggregations> cityAggregationsTestData)
-    {
-        OffsetDateTime windowStart = calculateLowerWindowBoundForSecondWindows(eventTimestamp, cityAggregationsWindowDurationSeconds);
-        OffsetDateTime windowEnd = windowStart.plusSeconds(cityAggregationsWindowDurationSeconds);
-
-        Window window = new Window(windowStart.toEpochSecond(), windowEnd.toEpochSecond());
-        CityAggregations aggregation = new CityAggregations(msg.activeDelta, msg.reactiveDelta, msg.cityID, window);
-        CityAggregations tmpAggregation =  cityAggregationsTestData.get(aggregation);
-        if(tmpAggregation == null)
-        {
-            cityAggregationsTestData.put(aggregation, aggregation);
-        }
-        else
-        {
-            tmpAggregation.aggregatedActiveDelta += aggregation.aggregatedActiveDelta;
-            tmpAggregation.aggregatedReactiveDelta += aggregation.aggregatedReactiveDelta;
-        }
-    }
 
     @BeforeAll
     public void createMockData()
     {
-        final int numberOfMessagesPerIteration = 5;
         final int numberOfIterations = 3;
 
         Map<CityAggregations, CityAggregations> cityAggregationsTestData = new HashMap<>();
         Map<CountryAggregations,CountryAggregations> countryAggregationsTestData = new HashMap<>();
         Map<HourlyConsumerAggregation,HourlyConsumerAggregation> hourlyConsumerAggregationsTestData = new HashMap<>();
 
-        OffsetDateTime timestamp = OffsetDateTime.now();
+        //OffsetDateTime timestamp = OffsetDateTime.now();
+        long timestamp = Instant.now().getEpochSecond();
 
         for(int j = 0; j < numberOfIterations; j++)
         {
-            for (int i = 0; i < numberOfMessagesPerIteration; i++)
+            for (int i = 0; i < numberOfTestMessages; i++)
             {
                 CounterMessage msg = simulator.generateMessage();
                 //LocalDateTime timestamp = LocalDateTime.parse(msg.timestamp);
                 //OffsetDateTime zonedTimestamp = OffsetDateTime.ofInstant(Instant.ofEpochSecond(msg.timestamp), ZoneId.systemDefault());
-                msg.timestamp = timestamp.toEpochSecond();
+                msg.timestamp = timestamp;
 
                 kafkaTemplate.send(inputTopic, msg);
 
                 // city aggregations
-                prepareExpectedCityAggregations(timestamp, msg, cityAggregationsTestData);
+                TestUtils.prepareExpectedCityAggregations(msg, cityAggregationsTestData);
 
                 // country aggregations
-                prepareExpectedCountryAggregations(timestamp, msg, countryAggregationsTestData);
+                TestUtils.prepareExpectedCountryAggregations(msg, countryAggregationsTestData);
 
                 // hourly aggregations by consumer
-                prepareExpectedHourlyConsumerAggregations(timestamp, msg, hourlyConsumerAggregationsTestData);
+                TestUtils.prepareExpectedHourlyConsumerAggregations(msg, hourlyConsumerAggregationsTestData);
 
             }
             //sleepUtil(3000);
-            timestamp = timestamp.plusSeconds(3).truncatedTo(ChronoUnit.SECONDS);
+            //timestamp = timestamp.plusSeconds(3).truncatedTo(ChronoUnit.SECONDS);
+            timestamp += 3; // increment for 3 seconds
         }
 
         expectedCityAggregations = cityAggregationsTestData
