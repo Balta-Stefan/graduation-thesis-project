@@ -13,7 +13,7 @@ import java.util.concurrent.TimeoutException;
 
 public class App
 {
-    private static final String hourlyConsumerTopic = "hourlyConsumer";
+    private static final String hourlyConsumerTopic = "hourlyConsumptionByConsumer";
     private static final String totalByCityTopic = "totalByCity";
     private static final String totalConsumptionTopic = "totalConsumption";
 

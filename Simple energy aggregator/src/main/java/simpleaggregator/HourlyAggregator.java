@@ -17,8 +17,8 @@ import static org.apache.spark.sql.functions.col;
 
 public class HourlyAggregator
 {
-    private static final String topicName = "hourlyConsumer";
-    private static final String checkpointLocation = "C:\\Users\\Korisnik\\Desktop\\Spark checkpoint\\";
+    private static final String topicName = "hourlyConsumptionByConsumer";
+    private static final String checkpointLocation = "s3a://testing/hourly-aggregator-checkpoints";
     private static final String kafkaBootstrapServers = "127.0.0.1:9092";
 
     public static void main(String[] args) throws TimeoutException
