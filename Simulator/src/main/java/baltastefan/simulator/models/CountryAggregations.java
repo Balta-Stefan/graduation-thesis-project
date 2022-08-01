@@ -6,7 +6,7 @@ import lombok.ToString;
 
 
 @NoArgsConstructor
-@ToString
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class CountryAggregations extends Aggregation
 {
