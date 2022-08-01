@@ -28,7 +28,7 @@ public class App
     private static final String kafkaBootstrapServers = "127.0.0.1:9092";
     private static final String inputTopicName = "input";
 
-    public static void main(String[] args) throws TimeoutException, StreamingQueryException, AnalysisException
+    public static void main(String[] args) throws TimeoutException, StreamingQueryException
     {
         // https://spark.apache.org/docs/latest/submitting-applications.html#master-urls
         // https://databricks.com/blog/2017/04/26/processing-data-in-apache-kafka-with-structured-streaming-in-apache-spark-2-2.html
