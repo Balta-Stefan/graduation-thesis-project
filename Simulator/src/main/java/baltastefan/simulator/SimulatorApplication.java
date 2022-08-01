@@ -6,9 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.support.converter.ByteArrayJsonMessageConverter;
 import org.springframework.kafka.support.converter.JsonMessageConverter;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableKafka
+@EnableScheduling
 public class SimulatorApplication
 {
     public static void main(String[] args)
