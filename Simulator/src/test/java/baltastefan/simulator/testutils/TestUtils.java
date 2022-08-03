@@ -89,7 +89,7 @@ public class TestUtils
         OffsetDateTime windowEnd = windowStart.plusSeconds(cityAggregationsWindowDurationSeconds);
 
         Window window = new Window(windowStart.toEpochSecond(), windowEnd.toEpochSecond());
-        CityAggregations aggregation = new CityAggregations(msg.activeDelta, msg.reactiveDelta, msg.cityID, window);
+        CityAggregations aggregation = new CityAggregations(0, 0, msg.activeDelta, msg.reactiveDelta, msg.cityID, window);
         CityAggregations tmpAggregation =  cityAggregationsTestData.get(aggregation);
         if(tmpAggregation == null)
         {
