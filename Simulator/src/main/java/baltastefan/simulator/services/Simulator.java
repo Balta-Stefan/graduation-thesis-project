@@ -17,8 +17,9 @@ public class Simulator
     @Value("${number-of-unique-meters}")
     private int numberOfUniqueMeters;
 
-    @Value("${number-of-unique-cities}")
-    private int numberOfUniqueCities;
+
+    @Value("${maximum-id}")
+    private int maximumID;
 
     @Value("${kafka.topic.input}")
     private String inputTopicName;
@@ -27,7 +28,6 @@ public class Simulator
     private int numberOfMessagesPerInterval;
 
     private List<Long> meterIds = new ArrayList<>();
-    private List<Long> cityIds = new ArrayList<>();
     private Map<Long, Long> meterIdToCityIdMapper = new HashMap<>(); // key is meterId, value is cityId
     private final Map<Long, Double> totalConsumed = new HashMap<>(); // key is meterId
 
@@ -53,16 +53,15 @@ public class Simulator
     private void generateData()
     {
         generatorUtil(numberOfUniqueMeters, meterIds);
-        generatorUtil(numberOfUniqueCities, cityIds);
 
         // map meters to cities
-        int cityIndex = 0;
+        long cityID = 1;
         for(int i = 0; i < numberOfUniqueMeters; i++)
         {
             Long meterId = meterIds.get(i);
-            meterIdToCityIdMapper.put(meterId, cityIds.get(cityIndex));
+            meterIdToCityIdMapper.put(meterId, cityID);
 
-            cityIndex = (cityIndex + 1) % numberOfUniqueCities;
+            cityID = (cityID + 1) % (maximumID + 1);
         }
     }
 
