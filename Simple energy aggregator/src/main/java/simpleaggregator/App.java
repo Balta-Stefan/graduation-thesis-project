@@ -27,6 +27,7 @@ public class App
 
     private static final String kafkaBootstrapServers = "127.0.0.1:9092";
     private static final String inputTopicName = "input";
+    private static final String cityCoordinatesCsvPath = "s3a://simple-energy-aggregator/city-coordinates.csv";
 
     public static void main(String[] args) throws TimeoutException, StreamingQueryException
     {
@@ -65,6 +66,19 @@ public class App
                 .add("timestamp", DataTypes.LongType, false)
                 .add("activeDelta", DataTypes.DoubleType, false)
                 .add("reactiveDelta", DataTypes.DoubleType, false);
+
+        StructType cityCoordinatesSchema = new StructType()
+                .add("cityID", DataTypes.LongType, false)
+                .add("latitude", DataTypes.DoubleType, false)
+                .add("longitude", DataTypes.DoubleType, false);
+
+        // CSV file has a header
+        Dataset<Row> cityCoordinates = spark
+                .read()
+                .option("header", true)
+                .schema(cityCoordinatesSchema)
+                .csv(cityCoordinatesCsvPath);
+        cityCoordinates.show();
 
         //messageSchema.printTreeString();
 
@@ -135,7 +149,8 @@ public class App
                         unix_timestamp(col("window.start")).as("start"),
                         unix_timestamp(col("window.end")).as("end")
                 ))
-                .select("cityID", "unix_window", "aggregatedActiveDelta", "aggregatedReactiveDelta");
+                .join(cityCoordinates, "cityID")
+                .select("cityID", "latitude", "longitude", "unix_window", "aggregatedActiveDelta", "aggregatedReactiveDelta");
         totalByCity.printSchema();
 
         final String totalConsumptionWindowDuration = countryWindowDurationSeconds + " seconds";
