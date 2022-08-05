@@ -10,5 +10,3 @@ services:
 volumes:
     grafana_data:
         driver: local
-
-# Web UI can be accessed at localhost:8086/orgs/my-org-name/dashboards
