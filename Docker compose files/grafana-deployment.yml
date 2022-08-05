@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - "grafana_data:/var/lib/grafana"
+    ports:
+      - "3000:3000"
+volumes:
+    grafana_data:
+        driver: local
+
+# Web UI can be accessed at localhost:8086/orgs/my-org-name/dashboards
