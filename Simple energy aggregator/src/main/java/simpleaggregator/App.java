@@ -70,7 +70,8 @@ public class App
         StructType cityCoordinatesSchema = new StructType()
                 .add("cityID", DataTypes.LongType, false)
                 .add("latitude", DataTypes.DoubleType, false)
-                .add("longitude", DataTypes.DoubleType, false);
+                .add("longitude", DataTypes.DoubleType, false)
+                .add("cityName", DataTypes.StringType, false);
 
         // CSV file has a header
         Dataset<Row> cityCoordinates = spark
@@ -150,7 +151,7 @@ public class App
                         unix_timestamp(col("window.end")).as("end")
                 ))
                 .join(cityCoordinates, "cityID")
-                .select("cityID", "latitude", "longitude", "unix_window", "aggregatedActiveDelta", "aggregatedReactiveDelta");
+                .select("cityID", "cityName", "latitude", "longitude", "unix_window", "aggregatedActiveDelta", "aggregatedReactiveDelta");
         totalByCity.printSchema();
 
         final String totalConsumptionWindowDuration = countryWindowDurationSeconds + " seconds";

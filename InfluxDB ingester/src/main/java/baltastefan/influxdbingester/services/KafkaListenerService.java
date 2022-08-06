@@ -35,7 +35,8 @@ public class KafkaListenerService
                     .addField("aggregatedReactiveDelta", agg.aggregatedReactiveDelta)
                     .addField("latitude", agg.latitude)
                     .addField("longitude", agg.longitude)
-                    .addTag("cityID", Long.toString(agg.cityID));
+                    .addTag("cityID", Long.toString(agg.cityID))
+                    .addTag("cityName", agg.cityName);
             points.add(point);
         }
 
