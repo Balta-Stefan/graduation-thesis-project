@@ -14,5 +14,4 @@ public class CounterMessage
     public long timestamp;
     public double activeDelta;
     public double reactiveDelta;
-    public double totalConsumed;
 }
