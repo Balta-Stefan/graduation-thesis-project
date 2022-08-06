@@ -12,7 +12,7 @@ services:
       - DOCKER_INFLUXDB_INIT_USERNAME=root
       - DOCKER_INFLUXDB_INIT_PASSWORD=sigurnost
       - DOCKER_INFLUXDB_INIT_ORG=org
-      - DOCKER_INFLUXDB_INIT_BUCKET=bucket
+      - DOCKER_INFLUXDB_INIT_BUCKET=simple-energy-aggregator
       - DOCKER_INFLUXDB_INIT_RETENTION=24h
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
 volumes:
