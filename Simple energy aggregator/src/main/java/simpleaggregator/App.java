@@ -41,6 +41,7 @@ public class App
         SparkSession spark = SparkSession
                 .builder()
                 .appName("Simple energy aggregator Spark application")
+                .config("spark.ui.port", 12000)
                 .config("spark.scheduler.mode", "FAIR")
                 .config("spark.sql.shuffle.partitions", 1)
                 .config("spark.sql.streaming.checkpointLocation", checkpointRootLocation)
@@ -64,8 +65,7 @@ public class App
                 .add("meterID", DataTypes.LongType, false)
                 .add("cityID", DataTypes.LongType, false)
                 .add("timestamp", DataTypes.LongType, false)
-                .add("activeDelta", DataTypes.DoubleType, false)
-                .add("reactiveDelta", DataTypes.DoubleType, false);
+                .add("activeDelta", DataTypes.DoubleType, false);
 
         StructType cityCoordinatesSchema = new StructType()
                 .add("cityID", DataTypes.LongType, false)
@@ -94,11 +94,11 @@ public class App
                 .withColumn("timestamp", from_unixtime(col("timestamp")).cast(DataTypes.TimestampType));
 
         inputData.printSchema();
-        inputData
+        /*inputData
                 .writeStream()
                 .format("console")
                 .outputMode(OutputMode.Append())
-                .start();
+                .start();*/
 
 
         // aggregations
@@ -113,7 +113,6 @@ public class App
                 .sql("SELECT meterID, " +
                         " named_struct('start', to_unix_timestamp(window.start), 'end', to_unix_timestamp(window.end)) as unix_window," +
                         " SUM(activeDelta) as aggregatedActiveDelta," +
-                        " SUM(reactiveDelta) as aggregatedReactiveDelta" +
                         " FROM inputTable" +
                         " GROUP BY meterID, window(timestamp, '1 hour')");
         */
@@ -125,9 +124,8 @@ public class App
                         col("meterID"),
                         window(col("timestamp"), "1 hour")
                 )
-                .sum("activeDelta", "reactiveDelta")
+                .sum("activeDelta")
                 .withColumnRenamed("sum(activeDelta)", "aggregatedActiveDelta")
-                .withColumnRenamed("sum(reactiveDelta)", "aggregatedReactiveDelta")
                 .withColumn("unix_window", struct(
                         unix_timestamp(col("window.start")).as("start"),
                         unix_timestamp(col("window.end")).as("end")
@@ -143,9 +141,8 @@ public class App
                         col("cityID"),
                         window(col("timestamp"), totalConsumptionByCityWindowDuration)
                 )
-                .sum("activeDelta", "reactiveDelta")
+                .sum("activeDelta")
                 .withColumnRenamed("sum(activeDelta)", "aggregatedActiveDelta")
-                .withColumnRenamed("sum(reactiveDelta)", "aggregatedReactiveDelta")
                 .withColumn("unix_window", struct(
                         unix_timestamp(col("window.start")).as("start"),
                         unix_timestamp(col("window.end")).as("end")
@@ -160,9 +157,8 @@ public class App
                 .groupBy(
                         window(col("timestamp"), totalConsumptionWindowDuration)
                 )
-                .sum("activeDelta", "reactiveDelta")
+                .sum("activeDelta")
                 .withColumnRenamed("sum(activeDelta)", "aggregatedActiveDelta")
-                .withColumnRenamed("sum(reactiveDelta)", "aggregatedReactiveDelta")
                 .withColumn("unix_window", struct(
                         unix_timestamp(col("window.start")).as("start"),
                         unix_timestamp(col("window.end")).as("end")
@@ -170,7 +166,7 @@ public class App
                 .select("unix_window", "aggregatedActiveDelta", "aggregatedReactiveDelta");
         totalConsumption.printSchema();
 
-        hourlySumByConsumer
+        /*hourlySumByConsumer
                 .writeStream()
                 .format("console")
                 .option("truncate", false)
@@ -192,7 +188,7 @@ public class App
                 .option("truncate", false)
                 .option("spark.sql.streaming.checkpointLocation",  countryAggregationsCheckpointLocation)
                 //.outputMode(OutputMode.Update())
-                .start();
+                .start();*/
 
         // TODO detect anomalies in user reporting (readers shouldn't report a lower total value than in the last report)
 
@@ -204,7 +200,7 @@ public class App
                 //.option("truncate", false)
                 .option("kafka.bootstrap.servers", kafkaBootstrapServers)
                 .option("topic", hourlyConsumerTopic)
-                .option("spark.sql.streaming.checkpointLocation", hourlyConsumerAggregationsCheckpointLocation)
+                //.option("checkpointLocation", hourlyConsumerAggregationsCheckpointLocation)
                 .start();
         StreamingQuery totalByCityQuery = totalByCity
                 .select(to_json(struct("*")).alias("value"))
@@ -214,7 +210,7 @@ public class App
                 //.option("truncate", false)
                 .option("kafka.bootstrap.servers", kafkaBootstrapServers)
                 .option("topic", totalByCityTopic)
-                .option("spark.sql.streaming.checkpointLocation", cityAggregationsCheckpointLocation)
+                //.option("checkpointLocation", cityAggregationsCheckpointLocation)
                 .start();
         StreamingQuery totalConsumptionQuery = totalConsumption
                 .select(to_json(struct("*")).alias("value"))
@@ -224,7 +220,7 @@ public class App
                 //.option("truncate", false)
                 .option("kafka.bootstrap.servers", kafkaBootstrapServers)
                 .option("topic", totalConsumptionTopic)
-                .option("spark.sql.streaming.checkpointLocation", countryAggregationsCheckpointLocation)
+                //.option("checkpointLocation", countryAggregationsCheckpointLocation)
                 .start();
 
         spark.streams().awaitAnyTermination();

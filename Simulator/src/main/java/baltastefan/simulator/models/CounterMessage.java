@@ -13,5 +13,4 @@ public class CounterMessage
     public long cityID;
     public long timestamp;
     public double activeDelta;
-    public double reactiveDelta;
 }

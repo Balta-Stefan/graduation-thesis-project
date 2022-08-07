@@ -18,7 +18,7 @@ public class AggregationTestingWrapper
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AggregationTestingWrapper that = (AggregationTestingWrapper) o;
-        if(this.aggregation.aggregatedActiveDelta != that.aggregation.aggregatedActiveDelta || this.aggregation.aggregatedReactiveDelta != that.aggregation.aggregatedReactiveDelta)
+        if(this.aggregation.aggregatedActiveDelta != that.aggregation.aggregatedActiveDelta)
             return false;
 
         return aggregation.equals(that.aggregation);
@@ -27,6 +27,6 @@ public class AggregationTestingWrapper
     @Override
     public int hashCode()
     {
-        return Objects.hash(aggregation, aggregation.aggregatedActiveDelta, aggregation.aggregatedReactiveDelta);
+        return Objects.hash(aggregation, aggregation.aggregatedActiveDelta);
     }
 }

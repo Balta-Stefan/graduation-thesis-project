@@ -10,8 +10,8 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 public class CountryAggregations extends Aggregation
 {
-    public CountryAggregations(double activeDelta, double reactiveDelta, Window window)
+    public CountryAggregations(double activeDelta, Window window)
     {
-        super(activeDelta, reactiveDelta, window);
+        super(activeDelta, window);
     }
 }

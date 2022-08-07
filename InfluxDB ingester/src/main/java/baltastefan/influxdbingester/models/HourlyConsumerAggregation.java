@@ -4,9 +4,9 @@ public class HourlyConsumerAggregation extends Aggregation
 {
     public long meterID;
 
-    public HourlyConsumerAggregation(double activeDelta, double reactiveDelta, long meterID, Window window)
+    public HourlyConsumerAggregation(double activeDelta, long meterID, Window window)
     {
-        super(activeDelta, reactiveDelta, window);
+        super(activeDelta, window);
         this.meterID = meterID;
     }
 }

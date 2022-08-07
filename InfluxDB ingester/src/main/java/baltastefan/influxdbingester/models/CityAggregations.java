@@ -8,9 +8,9 @@ public class CityAggregations extends Aggregation
 
     public CityAggregations(){}
 
-    public CityAggregations(long cityID, String cityName, double latitude, double longitude, double activeDelta, double reactiveDelta, Window window)
+    public CityAggregations(long cityID, String cityName, double latitude, double longitude, double activeDelta, Window window)
     {
-        super(activeDelta, reactiveDelta, window);
+        super(activeDelta, window);
         this.cityID = cityID;
         this.cityName = cityName;
         this.latitude = latitude;

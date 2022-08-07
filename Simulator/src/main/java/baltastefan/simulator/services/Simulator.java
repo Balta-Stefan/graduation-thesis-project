@@ -14,6 +14,19 @@ import java.util.*;
 @Service
 public class Simulator
 {
+    private static class ConsumerData
+    {
+        public final long meterID;
+        public final long cityID;
+        public final boolean isHousehold; // false means that the consumer is industrial
+
+        public ConsumerData(long meterID, long cityID, boolean isHousehold)
+        {
+            this.meterID = meterID;
+            this.cityID = cityID;
+            this.isHousehold = isHousehold;
+        }
+    }
     @Value("${number-of-unique-meters}")
     private int numberOfUniqueMeters;
 
@@ -27,12 +40,21 @@ public class Simulator
     @Value("${number-of-messages-per-interval}")
     private int numberOfMessagesPerInterval;
 
-    private List<Long> meterIds = new ArrayList<>();
-    private Map<Long, Long> meterIdToCityIdMapper = new HashMap<>(); // key is meterId, value is cityId
-    private final Map<Long, Double> totalConsumed = new HashMap<>(); // key is meterId
+    @Value("${minimum-household-power-consumption-per-measuring-period}")
+    private double minimumHouseholdConsumptionPerPeriod;
 
-    private final Random rnd = new Random();
+    @Value("${maximum-household-power-consumption-per-measuring-period}")
+    private double maximumHouseholdConsumptionPerPeriod;
+
+    @Value("${percentage-of-industry-consumers}")
+    private double percentageOfIndustryConsumers;
+
+    private int currentConsumerIndex = 0;
+
+    private final List<ConsumerData> consumerData = new ArrayList<>();
     private final KafkaTemplate<String, CounterMessage> kafkaTemplate;
+
+    private double householdRandomGeneratorFactor;
 
     public Simulator(KafkaTemplate<String, CounterMessage> kafkaTemplate)
     {
@@ -41,6 +63,7 @@ public class Simulator
 
     private void generatorUtil(int numberOfUniqueIds, List<Long> list)
     {
+        Random rnd = new Random();
         rnd
                 .longs()
                 .map(Math::abs)
@@ -52,6 +75,9 @@ public class Simulator
     @PostConstruct
     private void generateData()
     {
+        List<Long> meterIds = new ArrayList<>();
+
+        householdRandomGeneratorFactor = 1/(maximumHouseholdConsumptionPerPeriod - minimumHouseholdConsumptionPerPeriod);
         generatorUtil(numberOfUniqueMeters, meterIds);
 
         // map meters to cities
@@ -59,35 +85,39 @@ public class Simulator
         for(int i = 0; i < numberOfUniqueMeters; i++)
         {
             Long meterId = meterIds.get(i);
-            meterIdToCityIdMapper.put(meterId, cityID);
+            boolean isConsumer = (Math.random() <= percentageOfIndustryConsumers/100) ? false : true;
+            ConsumerData tempConsumerData = new ConsumerData(meterId, cityID, isConsumer);
+            consumerData.add(tempConsumerData);
 
             cityID = (cityID + 1) % (maximumID + 1);
         }
     }
 
+    /**
+     * It is assumed that the average daily household power consumption is 12.5 kWh.This means that between 0.2W and 0.7W will be consumed every 3 seconds.
+     * */
     public synchronized CounterMessage generateMessage()
     {
         long currentTimestamp = Instant.now().getEpochSecond();
 
-        double activeDelta = rnd.nextInt(10);
-        double reactiveDelta = rnd.nextInt(10);
-        Long meterId = meterIds.get(rnd.nextInt(meterIds.size()));
-        Long cityId = meterIdToCityIdMapper.get(meterId);
+        double activeDelta = minimumHouseholdConsumptionPerPeriod + Math.random() / householdRandomGeneratorFactor; // minimum and maximum values are given in the properties file
+        ConsumerData consumerInfo = consumerData.get(currentConsumerIndex);
 
-        Double consumedSoFar = totalConsumed.get(meterId);
-        if(consumedSoFar == null)
-            consumedSoFar = 0.0;
+        if(consumerInfo.isHousehold)
+        {
 
-        consumedSoFar += activeDelta + reactiveDelta;
-        totalConsumed.put(meterId, consumedSoFar);
+        }
+        else
+        {
 
+        }
+
+        currentConsumerIndex = (currentConsumerIndex + 1) % consumerData.size();
         return new CounterMessage(
-                meterId,
-                cityId,
+                consumerInfo.meterID,
+                consumerInfo.cityID,
                 currentTimestamp,
-                activeDelta,
-                reactiveDelta,
-                consumedSoFar);
+                activeDelta);
     }
 
     @Scheduled(fixedDelayString = "${scheduling-rate-ms}")

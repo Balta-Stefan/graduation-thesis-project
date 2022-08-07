@@ -215,7 +215,7 @@ public class SparkAggregationsTest
                 {
                     aggregations.put(value, value);
                 }
-                else if(value.aggregatedActiveDelta > existingAggregation.aggregatedActiveDelta || value.aggregatedReactiveDelta > existingAggregation.aggregatedReactiveDelta)
+                else if(value.aggregatedActiveDelta > existingAggregation.aggregatedActiveDelta)
                 {
                     // it might be possible that newer record has older timestamp (from Kafka record) so timestamps alone won't be used
                     aggregations.remove(value);

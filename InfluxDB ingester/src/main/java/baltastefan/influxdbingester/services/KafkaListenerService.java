@@ -32,7 +32,6 @@ public class KafkaListenerService
             Point point = Point.measurement("city-aggregation")
                     .time(agg.unix_window.end, WritePrecision.S)
                     .addField("aggregatedActiveDelta", agg.aggregatedActiveDelta)
-                    .addField("aggregatedReactiveDelta", agg.aggregatedReactiveDelta)
                     .addField("latitude", agg.latitude)
                     .addField("longitude", agg.longitude)
                     .addTag("cityID", Long.toString(agg.cityID))
@@ -52,8 +51,7 @@ public class KafkaListenerService
         {
             Point point = Point.measurement("country-aggregation")
                     .time(agg.unix_window.end, WritePrecision.S)
-                    .addField("aggregatedActiveDelta", agg.aggregatedActiveDelta)
-                    .addField("aggregatedReactiveDelta", agg.aggregatedReactiveDelta);
+                    .addField("aggregatedActiveDelta", agg.aggregatedActiveDelta);
             points.add(point);
         }
         System.out.println("sending country aggregations");

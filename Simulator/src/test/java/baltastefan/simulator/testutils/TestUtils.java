@@ -45,7 +45,7 @@ public class TestUtils
         OffsetDateTime windowEnd = windowStart.plusHours(1);
 
         Window window = new Window(windowStart.toEpochSecond(), windowEnd.toEpochSecond());
-        HourlyConsumerAggregation hourlyAggregation = new HourlyConsumerAggregation(msg.activeDelta, msg.reactiveDelta, msg.meterID, window);
+        HourlyConsumerAggregation hourlyAggregation = new HourlyConsumerAggregation(msg.activeDelta, msg.meterID, window);
         HourlyConsumerAggregation tmpHourly = hourlyConsumerAggregationsTestData.get(hourlyAggregation);
         if(tmpHourly == null)
         {
@@ -54,7 +54,6 @@ public class TestUtils
         else
         {
             tmpHourly.aggregatedActiveDelta += hourlyAggregation.aggregatedActiveDelta;
-            tmpHourly.aggregatedReactiveDelta += hourlyAggregation.aggregatedReactiveDelta;
         }
     }
 
@@ -67,7 +66,7 @@ public class TestUtils
         OffsetDateTime windowEnd = windowStart.plusSeconds(countryAggregationsWindowDurationSeconds);
 
         Window window = new Window(windowStart.toEpochSecond(), windowEnd.toEpochSecond());
-        CountryAggregations aggregation = new CountryAggregations(msg.activeDelta, msg.reactiveDelta, window);
+        CountryAggregations aggregation = new CountryAggregations(msg.activeDelta, window);
         CountryAggregations tmpAggregation = countryAggregationsTestData.get(aggregation);
         if(tmpAggregation == null)
         {
@@ -76,7 +75,6 @@ public class TestUtils
         else
         {
             tmpAggregation.aggregatedActiveDelta += aggregation.aggregatedActiveDelta;
-            tmpAggregation.aggregatedReactiveDelta += aggregation.aggregatedReactiveDelta;
         }
     }
 
@@ -89,7 +87,7 @@ public class TestUtils
         OffsetDateTime windowEnd = windowStart.plusSeconds(cityAggregationsWindowDurationSeconds);
 
         Window window = new Window(windowStart.toEpochSecond(), windowEnd.toEpochSecond());
-        CityAggregations aggregation = new CityAggregations(0, 0, msg.activeDelta, msg.reactiveDelta, msg.cityID, window);
+        CityAggregations aggregation = new CityAggregations(msg.cityID, null, 0, 0, msg.activeDelta, window);
         CityAggregations tmpAggregation =  cityAggregationsTestData.get(aggregation);
         if(tmpAggregation == null)
         {
@@ -98,7 +96,6 @@ public class TestUtils
         else
         {
             tmpAggregation.aggregatedActiveDelta += aggregation.aggregatedActiveDelta;
-            tmpAggregation.aggregatedReactiveDelta += aggregation.aggregatedReactiveDelta;
         }
     }
 }
