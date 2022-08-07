@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 
@@ -40,21 +40,53 @@ public class Simulator
     @Value("${number-of-messages-per-interval}")
     private int numberOfMessagesPerInterval;
 
-    @Value("${minimum-household-power-consumption-per-measuring-period}")
-    private double minimumHouseholdConsumptionPerPeriod;
+    @Value("${midnight-to-seven-minimum-consumption}")
+    private double midnightToSevenMinimumConsumption;
 
-    @Value("${maximum-household-power-consumption-per-measuring-period}")
-    private double maximumHouseholdConsumptionPerPeriod;
+    @Value("${midnight-to-seven-maximum-consumption}")
+    private double midnightToSevenMaximumConsumption;
 
-    @Value("${percentage-of-industry-consumers}")
-    private double percentageOfIndustryConsumers;
+    @Value("${seven-to-nine-minimum-consumption}")
+    private double sevenToNineMinimumConsumption;
+
+    @Value("${seven-to-nine-maximum-consumption}")
+    private double sevenToNineMaximumConsumption;
+
+    @Value("${nine-to-five-minimum-consumption}")
+    private double nineToFiveMinimumConsumption;
+
+    @Value("${nine-to-five-maximum-consumption}")
+    private double nineToFiveMaximumConsumption;
+
+    @Value("${five-to-midnight-minimum-consumption}")
+    private double fiveToMidnightMinimumConsumption;
+
+    @Value("${five-to-midnight-maximum-consumption}")
+    private double fiveToMidnightMaximumConsumption;
+
+    private double midnightToSevenRandomGeneratorCorrectiveFactor;
+    private double sevenToNineRandomGeneratorCorrectiveFactor;
+    private double nineToFiveRandomGeneratorCorrectiveFactor;
+    private double fiveToMidnightRandomGeneratorCorrectiveFactor;
+
+    @Value("${spring-seasonal-factor}")
+    private double springSeasonalFactor;
+
+    @Value("${summer-seasonal-factor}")
+    private double summerSeasonalFactor;
+
+    @Value("${autumn-seasonal-factor}")
+    private double autumnSeasonalFactor;
+
+    @Value("${winter-seasonal-factor}")
+    private double winterSeasonalFactor;
 
     private int currentConsumerIndex = 0;
 
+    private ZonedDateTime currentTime = ZonedDateTime.now();
+
     private final List<ConsumerData> consumerData = new ArrayList<>();
     private final KafkaTemplate<String, CounterMessage> kafkaTemplate;
-
-    private double householdRandomGeneratorFactor;
 
     public Simulator(KafkaTemplate<String, CounterMessage> kafkaTemplate)
     {
@@ -75,9 +107,13 @@ public class Simulator
     @PostConstruct
     private void generateData()
     {
+        midnightToSevenRandomGeneratorCorrectiveFactor = midnightToSevenMaximumConsumption - midnightToSevenMinimumConsumption;
+        sevenToNineRandomGeneratorCorrectiveFactor = sevenToNineMaximumConsumption - sevenToNineMinimumConsumption;
+        nineToFiveRandomGeneratorCorrectiveFactor = nineToFiveMaximumConsumption - nineToFiveMinimumConsumption;
+        fiveToMidnightRandomGeneratorCorrectiveFactor = fiveToMidnightMaximumConsumption - fiveToMidnightMinimumConsumption;
+
         List<Long> meterIds = new ArrayList<>();
 
-        householdRandomGeneratorFactor = 1/(maximumHouseholdConsumptionPerPeriod - minimumHouseholdConsumptionPerPeriod);
         generatorUtil(numberOfUniqueMeters, meterIds);
 
         // map meters to cities
@@ -85,8 +121,7 @@ public class Simulator
         for(int i = 0; i < numberOfUniqueMeters; i++)
         {
             Long meterId = meterIds.get(i);
-            boolean isConsumer = (Math.random() <= percentageOfIndustryConsumers/100) ? false : true;
-            ConsumerData tempConsumerData = new ConsumerData(meterId, cityID, isConsumer);
+            ConsumerData tempConsumerData = new ConsumerData(meterId, cityID, true);
             consumerData.add(tempConsumerData);
 
             cityID = (cityID + 1) % (maximumID + 1);
@@ -98,31 +133,44 @@ public class Simulator
      * */
     public synchronized CounterMessage generateMessage()
     {
-        long currentTimestamp = Instant.now().getEpochSecond();
-
-        double activeDelta = minimumHouseholdConsumptionPerPeriod + Math.random() / householdRandomGeneratorFactor; // minimum and maximum values are given in the properties file
         ConsumerData consumerInfo = consumerData.get(currentConsumerIndex);
 
-        if(consumerInfo.isHousehold)
-        {
+        int currentHour = currentTime.getHour();
 
-        }
+        double activeDelta = 0; // TODO
+
+        if(currentHour >= 0 && currentHour < 7)
+            activeDelta = midnightToSevenMinimumConsumption + Math.random()*midnightToSevenRandomGeneratorCorrectiveFactor;
+        else if(currentHour >= 7 && currentHour < 9)
+            activeDelta = sevenToNineMinimumConsumption + Math.random()*sevenToNineRandomGeneratorCorrectiveFactor;
+        else if(currentHour >= 9 && currentHour < 17)
+            activeDelta = nineToFiveMinimumConsumption + Math.random()*nineToFiveRandomGeneratorCorrectiveFactor;
+        else if(currentHour >= 17 && currentHour <= 23)
+            activeDelta = fiveToMidnightMinimumConsumption + Math.random()*fiveToMidnightRandomGeneratorCorrectiveFactor;
+
+        int currentMonth = currentTime.getMonth().getValue();
+
+        if(currentMonth <= 3)
+            activeDelta *= winterSeasonalFactor;
+        else if(currentMonth <= 6)
+            activeDelta *= springSeasonalFactor;
+        else if(currentMonth <= 9)
+            activeDelta *= summerSeasonalFactor;
         else
-        {
-
-        }
+            activeDelta *= autumnSeasonalFactor;
 
         currentConsumerIndex = (currentConsumerIndex + 1) % consumerData.size();
         return new CounterMessage(
                 consumerInfo.meterID,
                 consumerInfo.cityID,
-                currentTimestamp,
+                currentTime.toEpochSecond(),
                 activeDelta);
     }
 
     @Scheduled(fixedDelayString = "${scheduling-rate-ms}")
     public void simulate()
     {
+        currentTime = ZonedDateTime.now();
         for(int i = 0; i < numberOfMessagesPerInterval; i++)
         {
             CounterMessage msg = generateMessage();
