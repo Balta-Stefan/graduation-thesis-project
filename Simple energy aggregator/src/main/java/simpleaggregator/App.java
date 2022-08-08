@@ -130,7 +130,7 @@ public class App
                         unix_timestamp(col("window.start")).as("start"),
                         unix_timestamp(col("window.end")).as("end")
                 ))
-                .select("meterID", "unix_window", "aggregatedActiveDelta", "aggregatedReactiveDelta");
+                .select("meterID", "unix_window", "aggregatedActiveDelta");
         hourlySumByConsumer.printSchema();
 
 
@@ -148,7 +148,7 @@ public class App
                         unix_timestamp(col("window.end")).as("end")
                 ))
                 .join(cityCoordinates, "cityID")
-                .select("cityID", "cityName", "latitude", "longitude", "unix_window", "aggregatedActiveDelta", "aggregatedReactiveDelta");
+                .select("cityID", "cityName", "latitude", "longitude", "unix_window", "aggregatedActiveDelta");
         totalByCity.printSchema();
 
         final String totalConsumptionWindowDuration = countryWindowDurationSeconds + " seconds";
@@ -163,7 +163,7 @@ public class App
                         unix_timestamp(col("window.start")).as("start"),
                         unix_timestamp(col("window.end")).as("end")
                 ))
-                .select("unix_window", "aggregatedActiveDelta", "aggregatedReactiveDelta");
+                .select("unix_window", "aggregatedActiveDelta");
         totalConsumption.printSchema();
 
         /*hourlySumByConsumer
