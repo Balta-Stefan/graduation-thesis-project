@@ -137,15 +137,15 @@ public class Simulator
 
         int currentHour = currentTime.getHour();
 
-        double activeDelta = 0; // TODO
+        double activeDelta = 0;
 
-        if(currentHour >= 0 && currentHour < 7)
+        if(currentHour < 7)
             activeDelta = midnightToSevenMinimumConsumption + Math.random()*midnightToSevenRandomGeneratorCorrectiveFactor;
-        else if(currentHour >= 7 && currentHour < 9)
+        else if(currentHour < 9)
             activeDelta = sevenToNineMinimumConsumption + Math.random()*sevenToNineRandomGeneratorCorrectiveFactor;
-        else if(currentHour >= 9 && currentHour < 17)
+        else if(currentHour < 17)
             activeDelta = nineToFiveMinimumConsumption + Math.random()*nineToFiveRandomGeneratorCorrectiveFactor;
-        else if(currentHour >= 17 && currentHour <= 23)
+        else if(currentHour <= 23)
             activeDelta = fiveToMidnightMinimumConsumption + Math.random()*fiveToMidnightRandomGeneratorCorrectiveFactor;
 
         int currentMonth = currentTime.getMonth().getValue();
