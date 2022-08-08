@@ -137,17 +137,16 @@ public class SparkAggregationsTest
         Map<CountryAggregations,CountryAggregations> countryAggregationsTestData = new HashMap<>();
         Map<HourlyConsumerAggregation,HourlyConsumerAggregation> hourlyConsumerAggregationsTestData = new HashMap<>();
 
-        //OffsetDateTime timestamp = OffsetDateTime.now();
-        long timestamp = Instant.now().getEpochSecond();
 
+        ZonedDateTime time = ZonedDateTime.now();
         for(int j = 0; j < numberOfIterations; j++)
         {
             for (int i = 0; i < numberOfTestMessages; i++)
             {
-                CounterMessage msg = simulator.generateMessage();
+                CounterMessage msg = simulator.generateMessage(time);
                 //LocalDateTime timestamp = LocalDateTime.parse(msg.timestamp);
                 //OffsetDateTime zonedTimestamp = OffsetDateTime.ofInstant(Instant.ofEpochSecond(msg.timestamp), ZoneId.systemDefault());
-                msg.timestamp = timestamp;
+                msg.timestamp = time.toEpochSecond();
 
                 kafkaTemplate.send(inputTopic, msg);
 
@@ -163,7 +162,7 @@ public class SparkAggregationsTest
             }
             //sleepUtil(3000);
             //timestamp = timestamp.plusSeconds(3).truncatedTo(ChronoUnit.SECONDS);
-            timestamp += 3; // increment for 3 seconds
+            time = time.plusSeconds(3);
         }
 
         expectedCityAggregations = cityAggregationsTestData

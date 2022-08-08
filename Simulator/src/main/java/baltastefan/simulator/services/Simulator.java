@@ -3,16 +3,13 @@ package baltastefan.simulator.services;
 import baltastefan.simulator.models.CounterMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.time.ZonedDateTime;
 import java.util.*;
 
 
-@Service
-public class Simulator
+public abstract class Simulator
 {
     private static class ConsumerData
     {
@@ -28,17 +25,11 @@ public class Simulator
         }
     }
     @Value("${number-of-unique-meters}")
-    private int numberOfUniqueMeters;
+    protected int numberOfUniqueMeters;
 
 
     @Value("${maximum-id}")
     private int maximumID;
-
-    @Value("${kafka.topic.input}")
-    private String inputTopicName;
-
-    @Value("${number-of-messages-per-interval}")
-    private int numberOfMessagesPerInterval;
 
     @Value("${midnight-to-seven-minimum-consumption}")
     private double midnightToSevenMinimumConsumption;
@@ -83,15 +74,8 @@ public class Simulator
 
     private int currentConsumerIndex = 0;
 
-    private ZonedDateTime currentTime = ZonedDateTime.now();
-
     private final List<ConsumerData> consumerData = new ArrayList<>();
-    private final KafkaTemplate<String, CounterMessage> kafkaTemplate;
 
-    public Simulator(KafkaTemplate<String, CounterMessage> kafkaTemplate)
-    {
-        this.kafkaTemplate = kafkaTemplate;
-    }
 
     private void generatorUtil(int numberOfUniqueIds, List<Long> list)
     {
@@ -128,7 +112,7 @@ public class Simulator
         }
     }
 
-    public synchronized CounterMessage generateMessage()
+    public CounterMessage generateMessage(ZonedDateTime currentTime)
     {
         ConsumerData consumerInfo = consumerData.get(currentConsumerIndex);
 
@@ -164,14 +148,5 @@ public class Simulator
                 activeDelta);
     }
 
-    @Scheduled(fixedDelayString = "${scheduling-rate-ms}")
-    public void simulate()
-    {
-        currentTime = ZonedDateTime.now();
-        for(int i = 0; i < numberOfMessagesPerInterval; i++)
-        {
-            CounterMessage msg = generateMessage();
-            kafkaTemplate.send(inputTopicName, msg);
-        }
-    }
+    public abstract void simulate();
 }

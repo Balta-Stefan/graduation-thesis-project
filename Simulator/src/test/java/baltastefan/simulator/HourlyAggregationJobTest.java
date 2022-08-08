@@ -18,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -59,11 +60,13 @@ public class HourlyAggregationJobTest
     {
         Map<HourlyConsumerAggregation, HourlyConsumerAggregation> aggregations = new HashMap<>();
 
+        ZonedDateTime time = ZonedDateTime.now();
         for(int i = 0; i < numberOfTestMessages; i++)
         {
-            CounterMessage msg = simulator.generateMessage();
+            CounterMessage msg = simulator.generateMessage(time);
             TestUtils.prepareExpectedHourlyConsumerAggregations(msg, aggregations);
             kafkaTemplate.send(inputTopic, msg);
+            time = time.plusSeconds(3);
         }
         AggregationTestingWrapper[] testAggregations =
                 aggregations
