@@ -128,9 +128,6 @@ public class Simulator
         }
     }
 
-    /**
-     * It is assumed that the average daily household power consumption is 12.5 kWh.This means that between 0.2W and 0.7W will be consumed every 3 seconds.
-     * */
     public synchronized CounterMessage generateMessage()
     {
         ConsumerData consumerInfo = consumerData.get(currentConsumerIndex);
