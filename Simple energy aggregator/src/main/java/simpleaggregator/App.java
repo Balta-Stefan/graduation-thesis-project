@@ -45,7 +45,7 @@ public class App
                 .config("spark.scheduler.mode", "FAIR")
                 .config("spark.sql.shuffle.partitions", 1)
                 .config("spark.sql.streaming.checkpointLocation", checkpointRootLocation)
-                .config("spark.sql.session.timeZone", "UTC")
+                //.config("spark.sql.session.timeZone", "UTC")
                 .config("spark.hadoop.fs.s3a.endpoint", "localhost:9000")
                 .config("spark.hadoop.fs.s3a.access.key", "vQStvk5ileb3Mhw0")
                 .config("spark.hadoop.fs.s3a.secret.key", "4rhALdLpPa8IBXxDehI69Ki3613krErB")
@@ -203,7 +203,7 @@ public class App
                 //.option("checkpointLocation", hourlyConsumerAggregationsCheckpointLocation)
                 .start();
         StreamingQuery totalByCityQuery = totalByCity
-                .select(to_json(struct("*")).alias("value"))
+                .select(to_json(struct("*")).alias("value"), col("cityID").cast(DataTypes.StringType).alias("key"))
                 .writeStream()
                 .outputMode(OutputMode.Update())
                 .format("kafka")
