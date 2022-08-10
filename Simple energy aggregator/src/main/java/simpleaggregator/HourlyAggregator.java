@@ -1,10 +1,7 @@
 package simpleaggregator;
 
 import org.apache.spark.sql.*;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.Metadata;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
+import org.apache.spark.sql.types.*;
 
 import static org.apache.spark.sql.functions.*;
 import static org.apache.spark.sql.functions.col;
@@ -22,10 +19,11 @@ public class HourlyAggregator
         SparkSession spark = SparkSession
                 .builder()
                 .appName("Simple energy aggregator Spark application")
+                .config("spark.ui.port", 12000)
                 .config("spark.scheduler.mode", "FAIR")
                 .config("spark.sql.shuffle.partitions", 5)
                 .config("spark.sql.streaming.checkpointLocation", checkpointLocation)
-                .config("spark.sql.session.timeZone", "UTC")
+                //.config("spark.sql.session.timeZone", "UTC")
                 .config("spark.hadoop.fs.s3a.endpoint", s3Endpoint)
                 .config("spark.hadoop.fs.s3a.access.key", "vQStvk5ileb3Mhw0")
                 .config("spark.hadoop.fs.s3a.secret.key", "4rhALdLpPa8IBXxDehI69Ki3613krErB")
@@ -64,10 +62,9 @@ public class HourlyAggregator
 
         StructType messageSchema =  new StructType()
                 .add("meterID", DataTypes.LongType, false)
-                .add("aggregatedActiveDelta", DataTypes.DoubleType, false)
-                .add("aggregatedReactiveDelta", DataTypes.DoubleType, false)
+                .add("aggregatedActiveDelta", new DecimalType(25, 17), false)
                 .add("unix_window", DataTypes.createStructType(unixWindowFields), false);
-        messageSchema.printTreeString();
+        //messageSchema.printTreeString();
 
         Dataset<Row> inputData = spark
                 .read()
@@ -81,20 +78,36 @@ public class HourlyAggregator
 
         inputData.printSchema();
 
-        DataFrameWriter<Row> data = inputData
-                .write()
-                .mode(SaveMode.Append);
+        System.out.println("Original data: ");
+        inputData.show();
 
+        // TODO take only the latest aggregation (which has the maximum aggregated value)
+
+        Dataset<Row> latestValuesPerConsumer = inputData
+                .groupBy("meterID", "unix_window")
+                .max("aggregatedActiveDelta")
+                .withColumn("date", from_unixtime(col("unix_window.start")).cast(DataTypes.DateType))
+                .groupBy("meterID", "date")
+                .sum("max(aggregatedActiveDelta)")
+                .withColumnRenamed("sum(max(aggregatedActiveDelta))", "aggregatedActiveDelta");
+                //.select("meterID", "unix_window", "aggregatedActiveDelta");
+        System.out.println("Aggregated data: ");
+        latestValuesPerConsumer.show();
+        latestValuesPerConsumer.printSchema();
 
         if(outputType.equals("json"))
-            data.json("s3a://" + s3OutputPath);
+        {
+            latestValuesPerConsumer
+                    .write()
+                    .mode(SaveMode.Overwrite)
+                    .json("s3a://" + s3OutputPath);
+        }
         else
-            data.parquet("s3a://" + s3OutputPath);
-
-        inputData
-                .write()
-                .format("console")
-                .mode(SaveMode.Append)
-                .save();
+        {
+            latestValuesPerConsumer
+                    .write()
+                    .mode(SaveMode.Append)
+                    .parquet("s3a://" + s3OutputPath);
+        }
     }
 }
