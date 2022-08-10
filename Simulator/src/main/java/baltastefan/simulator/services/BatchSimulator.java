@@ -2,6 +2,7 @@ package baltastefan.simulator.services;
 
 import baltastefan.simulator.models.CounterMessage;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 @Service
+@Profile("batch-simulator")
 public class BatchSimulator extends Simulator
 {
     @Value("${kafka.topic.input}")
