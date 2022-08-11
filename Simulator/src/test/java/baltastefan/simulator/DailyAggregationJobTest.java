@@ -68,7 +68,9 @@ public class DailyAggregationJobTest
         Map<MapPair, TotalConsumerDailyConsumption> aggregations = new HashMap<>();
 
         ZonedDateTime time = ZonedDateTime.now();
-        for(int i = 0; i < numberOfTestMessages; i++)
+        ZonedDateTime nextDay = time.plusDays(1);
+
+        while(time.isBefore(nextDay))
         {
             CounterMessage msg = simulator.generateMessage(time);
 
@@ -80,7 +82,7 @@ public class DailyAggregationJobTest
                 existingAggregation.aggregatedActiveDelta += msg.activeDelta;
 
             kafkaTemplate.send(inputTopic, msg);
-            time = time.plusSeconds(3);
+            time = time.plusSeconds(60);
         }
 
         return new ArrayList<TotalConsumerDailyConsumption>(aggregations.values());
