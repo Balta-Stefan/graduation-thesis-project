@@ -6,7 +6,7 @@ import lombok.ToString;
 
 @NoArgsConstructor
 @ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true, exclude = {"latitude", "longitude"})
+@EqualsAndHashCode(callSuper = true, exclude = {"latitude", "longitude", "cityName"})
 public class CityAggregations extends Aggregation
 {
     public long cityID;
