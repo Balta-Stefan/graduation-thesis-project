@@ -9,7 +9,7 @@ import static org.apache.spark.sql.functions.col;
 public class HourlyAggregator
 {
     private static final String topicName = "hourlyConsumptionByConsumer";
-    private static final String checkpointLocation = "s3a://testing/hourly-aggregator-checkpoints";
+    //private static final String checkpointLocation = "s3a://simple-energy-aggregator/hourly-aggregator-checkpoints";
     private static final String kafkaBootstrapServers = "127.0.0.1:9092";
 
     private static final String s3Endpoint = "localhost:9000";
@@ -22,12 +22,16 @@ public class HourlyAggregator
                 .config("spark.ui.port", 12000)
                 .config("spark.scheduler.mode", "FAIR")
                 .config("spark.sql.shuffle.partitions", 5)
-                .config("spark.sql.streaming.checkpointLocation", checkpointLocation)
+                //.config("spark.sql.streaming.checkpointLocation", checkpointLocation)
                 //.config("spark.sql.session.timeZone", "UTC")
                 .config("spark.hadoop.fs.s3a.endpoint", s3Endpoint)
                 .config("spark.hadoop.fs.s3a.access.key", "vQStvk5ileb3Mhw0")
                 .config("spark.hadoop.fs.s3a.secret.key", "4rhALdLpPa8IBXxDehI69Ki3613krErB")
+                .config("spark.hadoop.parquet.enable.summary-metadata", false)
+                .config("spark.sql.parquet.mergeSchema", false)
                 .config("spark.hadoop.fs.s3a.committer.name", "directory")
+                .config("spark.sql.parquet.filterPushdown", true)
+                .config("spark.sql.hive.metastorePartitionPruning", true)
                 .config("spark.sql.sources.commitProtocolClass", "org.apache.spark.internal.io.cloud.PathOutputCommitProtocol")
                 .config("spark.sql.parquet.output.committer.class", "org.apache.spark.internal.io.cloud.BindingParquetOutputCommitter")
                 .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
@@ -62,7 +66,8 @@ public class HourlyAggregator
 
         StructType messageSchema =  new StructType()
                 .add("meterID", DataTypes.LongType, false)
-                .add("aggregatedActiveDelta", new DecimalType(25, 17), false)
+                .add("cityID", DataTypes.LongType, false)
+                .add("aggregatedActiveDelta", DataTypes.DoubleType, false)
                 .add("unix_window", DataTypes.createStructType(unixWindowFields), false);
         //messageSchema.printTreeString();
 
@@ -84,12 +89,15 @@ public class HourlyAggregator
         // TODO take only the latest aggregation (which has the maximum aggregated value)
 
         Dataset<Row> latestValuesPerConsumer = inputData
-                .groupBy("meterID", "unix_window")
+                .groupBy("meterID", "unix_window", "cityID")
                 .max("aggregatedActiveDelta")
-                .withColumn("date", from_unixtime(col("unix_window.start")).cast(DataTypes.DateType))
-                .groupBy("meterID", "date")
+                .withColumn("date", from_unixtime(col("unix_window.start")).cast(DataTypes.TimestampType))
+                .groupBy("meterID", "date", "cityID")
                 .sum("max(aggregatedActiveDelta)")
-                .withColumnRenamed("sum(max(aggregatedActiveDelta))", "aggregatedActiveDelta");
+                .withColumnRenamed("sum(max(aggregatedActiveDelta))", "aggregatedActiveDelta")
+                .withColumn("year", year(col("date")))
+                .withColumn("month", month(col("date")))
+                .withColumn("hour", hour(col("date")));
                 //.select("meterID", "unix_window", "aggregatedActiveDelta");
         System.out.println("Aggregated data: ");
         latestValuesPerConsumer.show();
@@ -105,8 +113,10 @@ public class HourlyAggregator
         else
         {
             latestValuesPerConsumer
+                    .repartition(150, col("year"),col("month"),col("cityID"))
                     .write()
                     .mode(SaveMode.Append)
+                    .partitionBy("year", "month", "cityID")
                     .parquet("s3a://" + s3OutputPath);
         }
     }
