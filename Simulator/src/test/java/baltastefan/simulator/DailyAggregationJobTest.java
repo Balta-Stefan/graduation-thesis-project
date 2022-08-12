@@ -77,7 +77,7 @@ public class DailyAggregationJobTest
             MapPair tempPair = new MapPair(msg.meterID, time.toLocalDate().toString());
             TotalConsumerDailyConsumption existingAggregation = aggregations.get(tempPair);
             if(existingAggregation == null)
-                aggregations.put(tempPair, new TotalConsumerDailyConsumption(msg.meterID, time.toLocalDate().toString(), msg.activeDelta));
+                aggregations.put(tempPair, new TotalConsumerDailyConsumption(msg.meterID, msg.cityID, time.toLocalDate().toString(), msg.activeDelta));
             else
                 existingAggregation.aggregatedActiveDelta += msg.activeDelta;
 

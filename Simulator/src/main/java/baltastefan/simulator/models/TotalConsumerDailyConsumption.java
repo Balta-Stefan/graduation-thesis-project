@@ -13,6 +13,7 @@ import lombok.ToString;
 public class TotalConsumerDailyConsumption
 {
     public long meterID;
+    public long cityID;
     public String date;
     public double aggregatedActiveDelta;
 }
