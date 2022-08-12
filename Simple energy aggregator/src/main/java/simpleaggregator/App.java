@@ -42,9 +42,9 @@ public class App
                 .builder()
                 .appName("Simple energy aggregator Spark application")
                 .config("spark.ui.port", 12000)
-                .config("spark.scheduler.mode", "FAIR")
-                .config("spark.sql.shuffle.partitions", 1)
-                .config("spark.sql.streaming.checkpointLocation", checkpointRootLocation)
+                //.config("spark.scheduler.mode", "FAIR")
+                .config("spark.sql.shuffle.partitions", 3)
+                //.config("spark.sql.streaming.checkpointLocation", checkpointRootLocation)
                 //.config("spark.sql.session.timeZone", "UTC")
                 .config("spark.hadoop.fs.s3a.endpoint", "localhost:9000")
                 .config("spark.hadoop.fs.s3a.access.key", "vQStvk5ileb3Mhw0")
@@ -122,6 +122,7 @@ public class App
                 .withWatermark("timestamp", "30 minutes")
                 .groupBy(
                         col("meterID"),
+                        col("cityID"),
                         window(col("timestamp"), "1 hour")
                 )
                 .sum("activeDelta")
@@ -130,7 +131,7 @@ public class App
                         unix_timestamp(col("window.start")).as("start"),
                         unix_timestamp(col("window.end")).as("end")
                 ))
-                .select("meterID", "unix_window", "aggregatedActiveDelta");
+                .select("meterID", "cityID", "unix_window", "aggregatedActiveDelta");
         hourlySumByConsumer.printSchema();
 
 
@@ -200,7 +201,7 @@ public class App
                 //.option("truncate", false)
                 .option("kafka.bootstrap.servers", kafkaBootstrapServers)
                 .option("topic", hourlyConsumerTopic)
-                //.option("checkpointLocation", hourlyConsumerAggregationsCheckpointLocation)
+                .option("checkpointLocation", hourlyConsumerAggregationsCheckpointLocation)
                 .start();
         StreamingQuery totalByCityQuery = totalByCity
                 .select(to_json(struct("*")).alias("value"), col("cityID").cast(DataTypes.StringType).alias("key"))
@@ -210,7 +211,7 @@ public class App
                 //.option("truncate", false)
                 .option("kafka.bootstrap.servers", kafkaBootstrapServers)
                 .option("topic", totalByCityTopic)
-                //.option("checkpointLocation", cityAggregationsCheckpointLocation)
+                .option("checkpointLocation", cityAggregationsCheckpointLocation)
                 .start();
         StreamingQuery totalConsumptionQuery = totalConsumption
                 .select(to_json(struct("*")).alias("value"))
@@ -220,7 +221,7 @@ public class App
                 //.option("truncate", false)
                 .option("kafka.bootstrap.servers", kafkaBootstrapServers)
                 .option("topic", totalConsumptionTopic)
-                //.option("checkpointLocation", countryAggregationsCheckpointLocation)
+                .option("checkpointLocation", countryAggregationsCheckpointLocation)
                 .start();
 
         spark.streams().awaitAnyTermination();
