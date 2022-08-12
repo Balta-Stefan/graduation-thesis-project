@@ -2,19 +2,21 @@ package baltastefan.simulator.testutils;
 
 import baltastefan.simulator.models.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 
+@Service
 public class TestUtils
 {
     @Value("${city-aggregations-window-duration-seconds}")
-    private static int cityAggregationsWindowDurationSeconds;
+    private int cityAggregationsWindowDurationSeconds;
     @Value("${country-aggregations-window-duration-seconds}")
-    private static int countryAggregationsWindowDurationSeconds;
-    private static OffsetDateTime calculateLowerWindowBoundForSecondWindows(OffsetDateTime eventTimestamp, int windowDurationSeconds)
+    private int countryAggregationsWindowDurationSeconds;
+    private OffsetDateTime calculateLowerWindowBoundForSecondWindows(OffsetDateTime eventTimestamp, int windowDurationSeconds)
     {
         // windowStart = 60 - ceil((60-eventSecond)/windowDuration)*windowDuration
         int windowStartSecond = (int)(60.0 - Math.ceil((60.0 - eventTimestamp.getSecond()) / windowDurationSeconds)*windowDurationSeconds);
@@ -35,7 +37,7 @@ public class TestUtils
     }
 
 
-    public static void prepareExpectedHourlyConsumerAggregations(CounterMessage msg, Map<HourlyConsumerAggregation,HourlyConsumerAggregation> hourlyConsumerAggregationsTestData)
+    public void prepareExpectedHourlyConsumerAggregations(CounterMessage msg, Map<HourlyConsumerAggregation,HourlyConsumerAggregation> hourlyConsumerAggregationsTestData)
     {
         // window is aligned by the hour
         OffsetDateTime windowStart = OffsetDateTime
@@ -57,7 +59,7 @@ public class TestUtils
         }
     }
 
-    public static void prepareExpectedCountryAggregations(CounterMessage msg, Map<CountryAggregations,CountryAggregations> countryAggregationsTestData)
+    public void prepareExpectedCountryAggregations(CounterMessage msg, Map<CountryAggregations,CountryAggregations> countryAggregationsTestData)
     {
         OffsetDateTime eventTimestamp = OffsetDateTime
                 .ofInstant(Instant.ofEpochSecond(msg.timestamp), ZoneOffset.systemDefault());
@@ -78,7 +80,7 @@ public class TestUtils
         }
     }
 
-    public static void prepareExpectedCityAggregations(CounterMessage msg, Map<CityAggregations, CityAggregations> cityAggregationsTestData)
+    public void prepareExpectedCityAggregations(CounterMessage msg, Map<CityAggregations, CityAggregations> cityAggregationsTestData)
     {
         OffsetDateTime eventTimestamp = OffsetDateTime
                 .ofInstant(Instant.ofEpochSecond(msg.timestamp), ZoneOffset.systemDefault());

@@ -19,13 +19,11 @@ import org.springframework.test.context.TestPropertySource;
 
 import javax.annotation.PostConstruct;
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -50,6 +48,9 @@ public class SparkAggregationsTest
     private KafkaTemplate<String, CounterMessage> kafkaTemplate;
     @Autowired
     private Simulator simulator;
+
+    @Autowired
+    private TestUtils testUtils;
 
 
     @Value("${number-of-test-messages}")
@@ -151,13 +152,13 @@ public class SparkAggregationsTest
                 kafkaTemplate.send(inputTopic, msg);
 
                 // city aggregations
-                TestUtils.prepareExpectedCityAggregations(msg, cityAggregationsTestData);
+                testUtils.prepareExpectedCityAggregations(msg, cityAggregationsTestData);
 
                 // country aggregations
-                TestUtils.prepareExpectedCountryAggregations(msg, countryAggregationsTestData);
+                testUtils.prepareExpectedCountryAggregations(msg, countryAggregationsTestData);
 
                 // hourly aggregations by consumer
-                TestUtils.prepareExpectedHourlyConsumerAggregations(msg, hourlyConsumerAggregationsTestData);
+                testUtils.prepareExpectedHourlyConsumerAggregations(msg, hourlyConsumerAggregationsTestData);
 
             }
             //sleepUtil(3000);
@@ -194,32 +195,18 @@ public class SparkAggregationsTest
         Map<V, V> aggregations = new HashMap<>(); // key is the record value, value is the record's timestamp (obtained from Kafka record)
 
         ConsumerRecords<K, V> messages;
-        int readMessages = 0;
-        long lowestOffset = 0;
-        long maxOffset = Long.MIN_VALUE;
 
         while((messages = consumer.poll(Duration.ofSeconds(pollTimeoutSeconds))).isEmpty() == false)
         {
             for (ConsumerRecord<K, V> record : messages)
             {
-                long recordOffset = record.offset();
-                lowestOffset = Math.min(lowestOffset, record.offset());
-                maxOffset = Math.max(maxOffset, record.offset());
-                readMessages++;
-
                 V value = record.value();
 
                 V existingAggregation = aggregations.get(value);
                 if(existingAggregation == null)
-                {
                     aggregations.put(value, value);
-                }
                 else if(value.aggregatedActiveDelta > existingAggregation.aggregatedActiveDelta)
-                {
-                    // it might be possible that newer record has older timestamp (from Kafka record) so timestamps alone won't be used
-                    aggregations.remove(value);
-                    aggregations.put(value, value);
-                }
+                    existingAggregation.aggregatedActiveDelta = value.aggregatedActiveDelta;
             }
         }
 
