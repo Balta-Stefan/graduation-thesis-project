@@ -2,13 +2,14 @@ package baltastefan.simulator.services;
 
 import baltastefan.simulator.models.CounterMessage;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 
 import javax.annotation.PostConstruct;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-
+/**
+ * The simulator assumes that cityIDs start from zero!
+* */
 public abstract class Simulator
 {
     private static class ConsumerData
