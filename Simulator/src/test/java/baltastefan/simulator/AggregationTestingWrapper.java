@@ -1,16 +1,22 @@
 package baltastefan.simulator;
 
 import baltastefan.simulator.models.Aggregation;
-import lombok.AllArgsConstructor;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
-@AllArgsConstructor
 @ToString
 public class AggregationTestingWrapper
 {
     public Aggregation aggregation;
+
+    public AggregationTestingWrapper(Aggregation aggregation)
+    {
+        this.aggregation = aggregation;
+        this.aggregation.aggregatedActiveDelta = new BigDecimal(Double.toString(this.aggregation.aggregatedActiveDelta)).setScale(5, RoundingMode.HALF_UP).doubleValue();
+    }
 
     @Override
     public boolean equals(Object o)
