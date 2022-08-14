@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  influxdb-ingester:
+    image: influxdb-ingester
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=desktop-kafka-1:9092
+      - INFLUXDB_ENDPOINT=http://desktop-influxdb-1:8086
+      - INFLUXDB_TOKEN=my-super-secret-auth-token
+      - INFLUXDB_ORGANISATION=org
+      - INFLUXDB_BUCKET=simple-energy-aggregator
+    ports:
+      - '10100:8080'
+    deploy:
+        resources:
+            limits:
+                memory: 500M
+  simulator:
+    image: simple-energy-aggregator-simulator
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=desktop-kafka-1:9092
+    ports:
+      - '10101:8080'
+    deploy:
+        resources:
+            limits:
+                memory: 500M

@@ -2,38 +2,46 @@ version: '3'
 
 services:
   spark:
-    image: docker.io/bitnami/spark:3.3
+    image: custom-spark-image
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
-      - AWS_ACCESS_KEY=vQStvk5ileb3Mhw0
-      - AWS_SECRET_KEY=4rhALdLpPa8IBXxDehI69Ki3613krErB
+      - AWS_ACCESS_KEY=MkHLU0kWvwdkoVKz
+      - AWS_SECRET_KEY=9e6wo9iw2CfpSNO3BeQeAHAfsUYu2aFC
     ports:
       - '8080:8080'
       - '7077:7077'
-    volumes:
-        - type: bind
-          read_only: true
-          source: D:\Diplomski rad\Prakticni dio\Simple energy aggregator\target\
-          target: /jobs/
+    deploy:
+        resources:
+            limits:
+                memory: 1G
+    #volumes:
+    #    - type: bind
+    #      read_only: true
+    #      source: D:\Diplomski rad\Prakticni dio\Simple energy aggregator\target\simple-energy-aggregator-1.0-SNAPSHOT.jar
+    #      target: /opt/bitnami/spark/jars/simple-energy-aggregator-1.0-SNAPSHOT.jar
   spark-worker:
-    image: docker.io/bitnami/spark:3.3
+    image: custom-spark-image
     environment:
       - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_MASTER_URL=spark://desktop-spark-1:7077
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=1
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
-      - AWS_ACCESS_KEY=vQStvk5ileb3Mhw0
-      - AWS_SECRET_KEY=4rhALdLpPa8IBXxDehI69Ki3613krErB
-    volumes:
-        - type: bind
-          read_only: true
-          source: D:\Diplomski rad\Prakticni dio\Simple energy aggregator\target\
-          target: /jobs/
+      - AWS_ACCESS_KEY=MkHLU0kWvwdkoVKz
+      - AWS_SECRET_KEY=9e6wo9iw2CfpSNO3BeQeAHAfsUYu2aFC
+    deploy:
+        resources:
+            limits:
+                memory: 1G
+    #volumes:
+    #    - type: bind
+    #      read_only: true
+    #      source: D:\Diplomski rad\Prakticni dio\Simple energy aggregator\target\simple-energy-aggregator-1.0-SNAPSHOT.jar
+    #      target: /opt/bitnami/spark/jars/simple-energy-aggregator-1.0-SNAPSHOT.jar

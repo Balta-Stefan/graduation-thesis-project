@@ -15,6 +15,10 @@ services:
       - DOCKER_INFLUXDB_INIT_BUCKET=simple-energy-aggregator
       - DOCKER_INFLUXDB_INIT_RETENTION=24h
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+    deploy:
+        resources:
+            limits:
+                memory: 500M
 volumes:
     influxdb_data:
         driver: local
