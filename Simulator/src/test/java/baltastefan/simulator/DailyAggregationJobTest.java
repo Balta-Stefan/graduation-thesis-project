@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.TestPropertySource;
 
+import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -45,16 +46,34 @@ public class DailyAggregationJobTest
 
     @Value("${hourly-aggregation-test-prefix}")
     private String aggregatedResultsObjectPrefix;
-
-    @Autowired
-    private MinioClient minioClient;
     @Autowired
     private Simulator simulator;
 
     @Autowired
     private KafkaTemplate<String, CounterMessage> kafkaTemplate;
 
+    @Value("${minio.endpoint}")
+    private String minioEndpoint;
 
+    @Value("${minio.port}")
+    private int minioEndpointPort;
+
+    @Value("${minio.access_key}")
+    private String accessKey;
+
+    @Value("${minio.secret_access_key}")
+    private String secret;
+
+    private MinioClient minioClient;
+
+    @PostConstruct
+    private void createMinioClient()
+    {
+        minioClient = MinioClient.builder()
+                .endpoint(minioEndpoint, minioEndpointPort, false)
+                .credentials(accessKey, secret)
+                .build();
+    }
 
     private List<TotalConsumerDailyConsumption> generateTestData()
     {
