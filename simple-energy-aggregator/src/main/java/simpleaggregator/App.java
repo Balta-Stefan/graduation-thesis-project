@@ -25,7 +25,7 @@ public class App
     private static final String countryAggregationsCheckpointLocation = checkpointRootLocation + "country-aggregations-checkpoints";
     private static final String hourlyConsumerAggregationsCheckpointLocation = checkpointRootLocation + "hourlyConsumer-aggregations-checkpoints";
 
-    private static final String kafkaBootstrapServers = "127.0.0.1:9092";
+    private static final String kafkaBootstrapServers = "desktop-kafka-1:9092";//"127.0.0.1:9092";
     private static final String inputTopicName = "input";
     private static final String cityCoordinatesCsvPath = "s3a://simple-energy-aggregator/city-coordinates.csv";
 
@@ -41,22 +41,27 @@ public class App
         SparkSession spark = SparkSession
                 .builder()
                 .appName("Simple energy aggregator Spark application")
-                .config("spark.ui.port", 12000)
+                //.config("spark.ui.port", 12000)
                 //.config("spark.scheduler.mode", "FAIR")
-                .config("spark.sql.shuffle.partitions", 3)
+                .config("spark.sql.shuffle.partitions", 20)
                 //.config("spark.sql.streaming.checkpointLocation", checkpointRootLocation)
                 //.config("spark.sql.session.timeZone", "UTC")
-                .config("spark.hadoop.fs.s3a.endpoint", "localhost:9000")
-                .config("spark.hadoop.fs.s3a.access.key", "vQStvk5ileb3Mhw0")
-                .config("spark.hadoop.fs.s3a.secret.key", "4rhALdLpPa8IBXxDehI69Ki3613krErB")
+                //.config("spark.hadoop.fs.s3a.endpoint", "localhost:9000")
+                .config("spark.hadoop.fs.s3a.endpoint", "minio:9000")
+                //.config("spark.hadoop.fs.s3a.access.key", "MkHLU0kWvwdkoVKz")
+                //.config("spark.hadoop.fs.s3a.secret.key", "9e6wo9iw2CfpSNO3BeQeAHAfsUYu2aFC")
                 .config("spark.hadoop.fs.s3a.committer.name", "directory")
                 .config("spark.sql.sources.commitProtocolClass", "org.apache.spark.internal.io.cloud.PathOutputCommitProtocol")
                 .config("spark.hadoop.fs.s3a.path.style.access", true)
                 //.config("spark.hadoop.fs.s3a.connection.timeout", 10000)
                 .config("spark.hadoop.fs.s3a.connection.ssl.enabled", false)
-                .master("local")
+                //.master("local")
                 .getOrCreate();
-        spark.sparkContext().setLogLevel("ERROR");
+        spark.sparkContext().setLogLevel("WARN");
+        System.out.println("spark.hadoop s3a endpoint is: " + spark.conf().get("spark.hadoop.fs.s3a.endpoint"));
+        System.out.println("hadoop s3a endpoint is: " + spark.sparkContext().hadoopConfiguration().get("fs.s3a.endpoint"));
+        System.out.println("CSV file path is: " + cityCoordinatesCsvPath);
+
 
         // the purpose of spark.hadoop.fs.s3a.path.style.access is explained at https://medium.com/@e.osama85/the-difference-between-the-amazon-s3-path-style-urls-and-virtual-hosted-style-urls-4fafd5eca4db
         // and https://www.redhat.com/en/blog/anatomy-s3a-filesystem-client
