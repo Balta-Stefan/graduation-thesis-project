@@ -1,0 +1,600 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "iteration": 1660560246988,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "KRP090iVk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "KRP090iVk"
+          },
+          "query": "import \"timezone\"\r\n\r\noption location = timezone.location(name: \"Europe/Sarajevo\")\r\n\r\nfrom(bucket: \"simple-energy-aggregator\")\r\n  |> range(start: today())\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"city-aggregation\" and r[\"cityName\"] == \"$city\" and r[\"_field\"] == \"aggregatedActiveDelta\")\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Total consumption in $city",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "aggregatedActiveDelta.*",
+            "renamePattern": "aggregatedActiveDelta"
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "KRP090iVk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "KRP090iVk"
+          },
+          "query": "import \"timezone\"\r\n\r\noption location = timezone.location(name: \"Europe/Sarajevo\")\r\n\r\nfrom(bucket: \"simple-energy-aggregator\")\r\n  |> range(start: today())\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"country-aggregation\")\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Total consumption",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "KRP090iVk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 10,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "KRP090iVk"
+          },
+          "query": "import \"timezone\"\r\n\r\noption location = timezone.location(name: \"Europe/Sarajevo\")\r\n\r\nfrom(bucket: \"simple-energy-aggregator\")\r\n  |> range(start: today())\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"city-aggregation\" and r[\"cityName\"] == \"$city\" and r[\"_field\"] == \"aggregatedActiveDelta\")\r\n  |> aggregateWindow(every: 1h, fn: sum)\r\n  |> timeShift(duration: -1h)",
+          "refId": "A"
+        }
+      ],
+      "title": "Total hourly consumption in $city",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "aggregatedActiveDelta.*",
+            "renamePattern": "aggregatedActiveDelta"
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "KRP090iVk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "KRP090iVk"
+          },
+          "query": "import \"timezone\"\r\n\r\noption location = timezone.location(name: \"Europe/Sarajevo\")\r\n\r\nfrom(bucket: \"simple-energy-aggregator\")\r\n  |> range(start: today())\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"country-aggregation\")\r\n  |> aggregateWindow(every: 1h, fn: sum)\r\n  |> timeShift(duration: -1h)",
+          "refId": "A"
+        }
+      ],
+      "title": "Total hourly consumption",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "KRP090iVk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 21,
+        "w": 16,
+        "x": 0,
+        "y": 16
+      },
+      "id": 2,
+      "options": {
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
+        },
+        "controls": {
+          "mouseWheelZoom": true,
+          "showAttribution": true,
+          "showDebug": false,
+          "showScale": false,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "opacity": 0.4,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "fixed": 15,
+                  "max": 15,
+                  "min": 2
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "location": {
+              "mode": "auto"
+            },
+            "name": "Layer 1",
+            "tooltip": true,
+            "type": "markers"
+          }
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "id": "coords",
+          "lat": 44.00407,
+          "lon": 17.724979,
+          "zoom": 7.2
+        }
+      },
+      "pluginVersion": "9.0.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "KRP090iVk"
+          },
+          "query": "import \"timezone\"\r\n\r\noption location = timezone.location(name: \"Europe/Sarajevo\")\r\n\r\nfrom(bucket: \"simple-energy-aggregator\")\r\n  |> range(start: -40s)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"city-aggregation\")\r\n  |> last()\r\n  |> pivot(\r\n    rowKey:[\"_time\"],\r\n    columnKey: [\"_field\"],\r\n    valueColumn: \"_value\"\r\n  )\r\n  |> group()\r\n  |> drop(columns: [\"_start\", \"_stop\", \"_measurement\"])\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Geomap",
+      "type": "geomap"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "Gradiška",
+          "value": "Gradiška"
+        },
+        "description": "",
+        "hide": 0,
+        "includeAll": false,
+        "label": "City",
+        "multi": false,
+        "name": "city",
+        "options": [
+          {
+            "selected": true,
+            "text": "Gradiška",
+            "value": "Gradiška"
+          },
+          {
+            "selected": false,
+            "text": "Banja Luka",
+            "value": "Banja Luka"
+          },
+          {
+            "selected": false,
+            "text": "Prijedor",
+            "value": "Prijedor"
+          },
+          {
+            "selected": false,
+            "text": "Bihać",
+            "value": "Bihać"
+          },
+          {
+            "selected": false,
+            "text": "Doboj",
+            "value": "Doboj"
+          },
+          {
+            "selected": false,
+            "text": "Tuzla",
+            "value": "Tuzla"
+          },
+          {
+            "selected": false,
+            "text": "Bijeljina",
+            "value": "Bijeljina"
+          },
+          {
+            "selected": false,
+            "text": "Sarajevo",
+            "value": "Sarajevo"
+          },
+          {
+            "selected": false,
+            "text": "Mostar",
+            "value": "Mostar"
+          },
+          {
+            "selected": false,
+            "text": "Trebinje",
+            "value": "Trebinje"
+          },
+          {
+            "selected": false,
+            "text": "Zvornik",
+            "value": "Zvornik"
+          },
+          {
+            "selected": false,
+            "text": "Zenica",
+            "value": "Zenica"
+          }
+        ],
+        "query": "Gradiška,Banja Luka,Prijedor,Bihać,Doboj,Tuzla,Bijeljina,Sarajevo,Mostar,Trebinje,Zvornik,Zenica",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Simple energy aggregations dashboard",
+  "uid": "m8LlrAi4k",
+  "version": 19,
+  "weekStart": ""
+}
