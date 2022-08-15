@@ -10,23 +10,23 @@ public class HourlyAggregator
 {
     private static final String topicName = "hourlyConsumptionByConsumer";
     //private static final String checkpointLocation = "s3a://simple-energy-aggregator/hourly-aggregator-checkpoints";
-    private static final String kafkaBootstrapServers = "127.0.0.1:9092";
+    private static final String kafkaBootstrapServers = System.getenv("KAFKA_BOOTSTRAP_SERVERS");//"127.0.0.1:9092";
 
-    private static final String s3Endpoint = "localhost:9000";
+    private static final String s3Endpoint = System.getenv("MINIO_ENDPOINT");//"localhost:9000";
 
     public static void main(String[] args)
     {
         SparkSession spark = SparkSession
                 .builder()
-                .appName("Simple energy aggregator Spark application")
-                .config("spark.ui.port", 12000)
+                .appName("Simple energy aggregator - hourly aggregator")
+                //.config("spark.ui.port", 12000)
                 .config("spark.scheduler.mode", "FAIR")
-                .config("spark.sql.shuffle.partitions", 5)
+                .config("spark.sql.shuffle.partitions", System.getenv("HOURLY_AGGREGATOR_SPARK_SQL_SHUFFLE_PARTITIONS"))
                 //.config("spark.sql.streaming.checkpointLocation", checkpointLocation)
                 //.config("spark.sql.session.timeZone", "UTC")
                 .config("spark.hadoop.fs.s3a.endpoint", s3Endpoint)
-                .config("spark.hadoop.fs.s3a.access.key", "vQStvk5ileb3Mhw0")
-                .config("spark.hadoop.fs.s3a.secret.key", "4rhALdLpPa8IBXxDehI69Ki3613krErB")
+                //.config("spark.hadoop.fs.s3a.access.key", "vQStvk5ileb3Mhw0")
+                //.config("spark.hadoop.fs.s3a.secret.key", "4rhALdLpPa8IBXxDehI69Ki3613krErB")
                 .config("spark.hadoop.parquet.enable.summary-metadata", false)
                 .config("spark.sql.parquet.mergeSchema", false)
                 .config("spark.hadoop.fs.s3a.committer.name", "directory")
@@ -43,8 +43,8 @@ public class HourlyAggregator
         spark.sparkContext().setLogLevel("ERROR");
 
         // this is required for testing
-        final String s3OutputPath = args[0];
-        final String outputType = args[1].toLowerCase();
+        final String s3OutputPath = System.getenv("HOURLY_AGGREGATOR_OUTPUT_PATH");//args[0];
+        //final String outputType = args[1];
 
         /*Dataset<Row> testJsonData = spark
                 .read()
@@ -103,7 +103,7 @@ public class HourlyAggregator
         latestValuesPerConsumer.show();
         latestValuesPerConsumer.printSchema();
 
-        if(outputType.equals("json"))
+        /*if(outputType.equals("json"))
         {
             latestValuesPerConsumer
                     .write()
@@ -113,11 +113,17 @@ public class HourlyAggregator
         else
         {
             latestValuesPerConsumer
-                    .repartition(150, col("year"),col("month"),col("cityID"))
+                    .repartition(col("year"),col("month"),col("cityID"))
                     .write()
                     .mode(SaveMode.Append)
                     .partitionBy("year", "month", "cityID")
                     .parquet("s3a://" + s3OutputPath);
-        }
+        }*/
+		latestValuesPerConsumer
+                    .repartition(col("year"),col("month"),col("cityID"))
+                    .write()
+                    .mode(SaveMode.Append)
+                    .partitionBy("year", "month", "cityID")
+                    .parquet("s3a://" + s3OutputPath);
     }
 }
