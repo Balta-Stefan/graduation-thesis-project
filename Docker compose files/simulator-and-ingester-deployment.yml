@@ -19,6 +19,7 @@ services:
     image: simple-energy-aggregator-simulator
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=desktop-kafka-1:9092
+      - SIMULATOR_MODE=batch-simulator
     ports:
       - '10101:8080'
     deploy:
