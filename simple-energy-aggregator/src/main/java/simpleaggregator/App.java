@@ -25,7 +25,7 @@ public class App
     private static final String countryAggregationsCheckpointLocation = checkpointRootLocation + "country-aggregations-checkpoints";
     private static final String hourlyConsumerAggregationsCheckpointLocation = checkpointRootLocation + "hourlyConsumer-aggregations-checkpoints";
 
-    private static final String kafkaBootstrapServers = "desktop-kafka-1:9092";//"127.0.0.1:9092";
+    private static final String kafkaBootstrapServers = System.getenv("KAFKA_BOOTSTRAP_SERVERS");
     private static final String inputTopicName = "input";
     private static final String cityCoordinatesCsvPath = "s3a://simple-energy-aggregator/city-coordinates.csv";
 
@@ -43,11 +43,11 @@ public class App
                 .appName("Simple energy aggregator Spark application")
                 //.config("spark.ui.port", 12000)
                 //.config("spark.scheduler.mode", "FAIR")
-                .config("spark.sql.shuffle.partitions", 20)
+                .config("spark.sql.shuffle.partitions", Integer.parseInt(System.getenv("SPARK_SQL_SHUFFLE_PARTITIONS")))
                 //.config("spark.sql.streaming.checkpointLocation", checkpointRootLocation)
                 //.config("spark.sql.session.timeZone", "UTC")
                 //.config("spark.hadoop.fs.s3a.endpoint", "localhost:9000")
-                .config("spark.hadoop.fs.s3a.endpoint", "minio:9000")
+                .config("spark.hadoop.fs.s3a.endpoint", System.getenv("MINIO_ENDPOINT"))
                 //.config("spark.hadoop.fs.s3a.access.key", "MkHLU0kWvwdkoVKz")
                 //.config("spark.hadoop.fs.s3a.secret.key", "9e6wo9iw2CfpSNO3BeQeAHAfsUYu2aFC")
                 .config("spark.hadoop.fs.s3a.committer.name", "directory")
