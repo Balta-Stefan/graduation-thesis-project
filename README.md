@@ -1,2 +1,2 @@
 # graduation-thesis-project
-![Screenshot](Architecture diagram.png)
+![Screenshot](Architecture%20diagram.png)
