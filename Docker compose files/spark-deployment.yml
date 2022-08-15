@@ -11,6 +11,11 @@ services:
       - SPARK_SSL_ENABLED=no
       - AWS_ACCESS_KEY=MkHLU0kWvwdkoVKz
       - AWS_SECRET_KEY=9e6wo9iw2CfpSNO3BeQeAHAfsUYu2aFC
+      - SPARK_SQL_SHUFFLE_PARTITIONS=3
+      - HOURLY_AGGREGATOR_SPARK_SQL_SHUFFLE_PARTITIONS=4
+      - HOURLY_AGGREGATOR_OUTPUT_PATH=simple-energy-aggregator/energy-data/
+      - MINIO_ENDPOINT=minio:9000
+      - KAFKA_BOOTSTRAP_SERVERS=desktop-kafka-1:9092
     ports:
       - '8080:8080'
       - '7077:7077'
@@ -36,10 +41,15 @@ services:
       - SPARK_SSL_ENABLED=no
       - AWS_ACCESS_KEY=MkHLU0kWvwdkoVKz
       - AWS_SECRET_KEY=9e6wo9iw2CfpSNO3BeQeAHAfsUYu2aFC
+      - SPARK_SQL_SHUFFLE_PARTITIONS=3
+      - HOURLY_AGGREGATOR_SPARK_SQL_SHUFFLE_PARTITIONS=4
+      - HOURLY_AGGREGATOR_OUTPUT_PATH=simple-energy-aggregator/energy-data/
+      - KAFKA_BOOTSTRAP_SERVERS=desktop-kafka-1:9092
     deploy:
         resources:
             limits:
                 memory: 1G
+        replicas: 2
     #volumes:
     #    - type: bind
     #      read_only: true
