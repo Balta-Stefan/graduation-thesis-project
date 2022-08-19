@@ -37,7 +37,7 @@ public class TestUtils
     }
 
 
-    public void prepareExpectedHourlyConsumerAggregations(CounterMessage msg, Map<HourlyConsumerAggregation,HourlyConsumerAggregation> hourlyConsumerAggregationsTestData)
+    public void prepareExpectedHourlyConsumerAggregations(MeterReading msg, Map<HourlyConsumerAggregation,HourlyConsumerAggregation> hourlyConsumerAggregationsTestData)
     {
         // window is aligned by the hour
         OffsetDateTime windowStart = OffsetDateTime
@@ -59,7 +59,7 @@ public class TestUtils
         }
     }
 
-    public void prepareExpectedCountryAggregations(CounterMessage msg, Map<CountryAggregations,CountryAggregations> countryAggregationsTestData)
+    public void prepareExpectedCountryAggregations(MeterReading msg, Map<CountryAggregations,CountryAggregations> countryAggregationsTestData)
     {
         OffsetDateTime eventTimestamp = OffsetDateTime
                 .ofInstant(Instant.ofEpochSecond(msg.timestamp), ZoneOffset.systemDefault());
@@ -80,7 +80,7 @@ public class TestUtils
         }
     }
 
-    public void prepareExpectedCityAggregations(CounterMessage msg, Map<CityAggregations, CityAggregations> cityAggregationsTestData)
+    public void prepareExpectedCityAggregations(MeterReading msg, Map<CityAggregations, CityAggregations> cityAggregationsTestData)
     {
         OffsetDateTime eventTimestamp = OffsetDateTime
                 .ofInstant(Instant.ofEpochSecond(msg.timestamp), ZoneOffset.systemDefault());

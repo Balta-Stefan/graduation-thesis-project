@@ -45,7 +45,7 @@ public class SparkAggregationsTest
 
 
     @Autowired
-    private KafkaTemplate<String, CounterMessage> kafkaTemplate;
+    private KafkaTemplate<String, MeterReading> kafkaTemplate;
     @Autowired
     private Simulator simulator;
 
@@ -144,7 +144,7 @@ public class SparkAggregationsTest
         {
             for (int i = 0; i < numberOfTestMessages; i++)
             {
-                CounterMessage msg = simulator.generateMessage(time);
+                MeterReading msg = simulator.generateMessage(time);
                 //LocalDateTime timestamp = LocalDateTime.parse(msg.timestamp);
                 //OffsetDateTime zonedTimestamp = OffsetDateTime.ofInstant(Instant.ofEpochSecond(msg.timestamp), ZoneId.systemDefault());
                 msg.timestamp = time.toEpochSecond();

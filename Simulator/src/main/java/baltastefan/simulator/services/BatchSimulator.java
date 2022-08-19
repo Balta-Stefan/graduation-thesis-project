@@ -1,6 +1,6 @@
 package baltastefan.simulator.services;
 
-import baltastefan.simulator.models.CounterMessage;
+import baltastefan.simulator.models.MeterReading;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -16,9 +16,9 @@ public class BatchSimulator extends Simulator
 {
     @Value("${kafka.topic.input}")
     private String inputTopicName;
-    private final KafkaTemplate<String, CounterMessage> kafkaTemplate;
+    private final KafkaTemplate<String, MeterReading> kafkaTemplate;
 
-    public BatchSimulator(KafkaTemplate<String, CounterMessage> kafkaTemplate)
+    public BatchSimulator(KafkaTemplate<String, MeterReading> kafkaTemplate)
     {
         this.kafkaTemplate = kafkaTemplate;
     }
@@ -47,7 +47,7 @@ public class BatchSimulator extends Simulator
         {
             for(int i = 0; i < numberOfUniqueMeters; i++)
             {
-                CounterMessage msg = generateMessage(time);
+                MeterReading msg = generateMessage(time);
                 kafkaTemplate.send(inputTopicName, msg);
             }
 

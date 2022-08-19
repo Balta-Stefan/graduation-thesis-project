@@ -1,6 +1,6 @@
 package baltastefan.simulator.services;
 
-import baltastefan.simulator.models.CounterMessage;
+import baltastefan.simulator.models.MeterReading;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
@@ -113,7 +113,7 @@ public abstract class Simulator
         }
     }
 
-    public CounterMessage generateMessage(ZonedDateTime currentTime)
+    public MeterReading generateMessage(ZonedDateTime currentTime)
     {
         ConsumerData consumerInfo = consumerData.get(currentConsumerIndex);
 
@@ -142,7 +142,7 @@ public abstract class Simulator
             activeDelta *= autumnSeasonalFactor;
 
         currentConsumerIndex = (currentConsumerIndex + 1) % consumerData.size();
-        return new CounterMessage(
+        return new MeterReading(
                 consumerInfo.meterID,
                 consumerInfo.cityID,
                 currentTime.toEpochSecond(),

@@ -1,6 +1,6 @@
 package baltastefan.simulator.services;
 
-import baltastefan.simulator.models.CounterMessage;
+import baltastefan.simulator.models.MeterReading;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -18,9 +18,9 @@ public class StreamingSimulator extends Simulator
 
     @Value("${number-of-messages-per-interval}")
     private int numberOfMessagesPerInterval;
-    private final KafkaTemplate<String, CounterMessage> kafkaTemplate;
+    private final KafkaTemplate<String, MeterReading> kafkaTemplate;
 
-    public StreamingSimulator(KafkaTemplate<String, CounterMessage> kafkaTemplate)
+    public StreamingSimulator(KafkaTemplate<String, MeterReading> kafkaTemplate)
     {
         this.kafkaTemplate = kafkaTemplate;
     }
@@ -32,7 +32,7 @@ public class StreamingSimulator extends Simulator
         ZonedDateTime time = ZonedDateTime.now();
         for(int i = 0; i < numberOfMessagesPerInterval; i++)
         {
-            CounterMessage msg = generateMessage(time);
+            MeterReading msg = generateMessage(time);
             kafkaTemplate.send(inputTopicName, msg);
         }
     }

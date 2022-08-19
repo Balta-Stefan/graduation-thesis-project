@@ -7,7 +7,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class CounterMessage
+public class MeterReading
 {
     public long meterID;
     public long cityID;
