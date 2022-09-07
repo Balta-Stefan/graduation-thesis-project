@@ -16,8 +16,6 @@ public class StreamingSimulator extends Simulator
     @Value("${kafka.topic.input}")
     private String inputTopicName;
 
-    @Value("${number-of-messages-per-interval}")
-    private int numberOfMessagesPerInterval;
     private final KafkaTemplate<String, MeterReading> kafkaTemplate;
 
     public StreamingSimulator(KafkaTemplate<String, MeterReading> kafkaTemplate)
@@ -30,7 +28,7 @@ public class StreamingSimulator extends Simulator
     public void simulate()
     {
         ZonedDateTime time = ZonedDateTime.now();
-        for(int i = 0; i < numberOfMessagesPerInterval; i++)
+        for(int i = 0; i < numberOfUniqueMeters; i++)
         {
             MeterReading msg = generateMessage(time);
             kafkaTemplate.send(inputTopicName, msg);
