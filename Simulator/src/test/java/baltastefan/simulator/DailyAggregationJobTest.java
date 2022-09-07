@@ -1,6 +1,6 @@
 package baltastefan.simulator;
 
-import baltastefan.simulator.models.CounterMessage;
+import baltastefan.simulator.models.MeterReading;
 import baltastefan.simulator.models.HourlyConsumerAggregation;
 import baltastefan.simulator.models.TotalConsumerDailyConsumption;
 import baltastefan.simulator.services.Simulator;
@@ -50,7 +50,7 @@ public class DailyAggregationJobTest
     private Simulator simulator;
 
     @Autowired
-    private KafkaTemplate<String, CounterMessage> kafkaTemplate;
+    private KafkaTemplate<String, MeterReading> kafkaTemplate;
 
     @Value("${minio.endpoint}")
     private String minioEndpoint;
@@ -91,7 +91,7 @@ public class DailyAggregationJobTest
 
         while(time.isBefore(nextDay))
         {
-            CounterMessage msg = simulator.generateMessage(time);
+            MeterReading msg = simulator.generateMessage(time);
 
             MapPair tempPair = new MapPair(msg.meterID, time.toLocalDate().toString());
             TotalConsumerDailyConsumption existingAggregation = aggregations.get(tempPair);
