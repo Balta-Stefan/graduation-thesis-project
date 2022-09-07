@@ -199,7 +199,7 @@ public class App
         // TODO detect anomalies in user reporting (readers shouldn't report a lower total value than in the last report)
 
         StreamingQuery hourlyByConsumerQuery = hourlySumByConsumer
-                .select(to_json(struct("*")).alias("value"), col("meterID").cast(DataTypes.StringType).alias("key"))
+                .select(to_json(struct("*")).alias("value"), struct("meterID", "unix_window").cast(DataTypes.StringType).alias("key"))
                 .writeStream()
                 .outputMode(OutputMode.Update())
                 .format("kafka")
