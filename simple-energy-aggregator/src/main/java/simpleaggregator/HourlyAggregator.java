@@ -92,9 +92,7 @@ public class HourlyAggregator
                 .groupBy("meterID", "unix_window", "cityID")
                 .max("aggregatedActiveDelta")
                 .withColumn("date", from_unixtime(col("unix_window.start")).cast(DataTypes.TimestampType))
-                .groupBy("meterID", "date", "cityID")
-                .sum("max(aggregatedActiveDelta)")
-                .withColumnRenamed("sum(max(aggregatedActiveDelta))", "aggregatedActiveDelta")
+                .withColumnRenamed("max(aggregatedActiveDelta)", "aggregatedActiveDelta")
                 .withColumn("year", year(col("date")))
                 .withColumn("month", month(col("date")))
                 .withColumn("hour", hour(col("date")));
