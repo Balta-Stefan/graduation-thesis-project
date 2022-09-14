@@ -1,4 +1,5 @@
-# graduation-thesis-project
+# Description
+
 ![Screenshot](Architecture%20diagram.png)
 
 This is a simplified energy monitoring system created to demonstrate stream and batch processing using Apache Spark.
