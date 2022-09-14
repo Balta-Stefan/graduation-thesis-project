@@ -6,13 +6,13 @@ This is a simplified energy monitoring system created to demonstrate stream and 
 
 A data generator application is made using Spring boot.  
 The generated data is sent to Apache Kafka.  
-Using Spark's structured streaming engine, the data is consumed and aggregated.Results are sent to Kafka.  
-Spark performs the following aggregations:
-- consumption by every city
-- consumption by every client
-- hourly consumption by every client
+Using Spark's structured streaming engine, the data is consumed and aggregated. Results are sent to Kafka.  
+Spark produces the following aggregations:
+- consumption per city
+- consumption per client
+- hourly consumption per client
 
-Another Spring boot application is used to ingest data from Kafka to InfluxDB.  
+Another Spring boot application is used to transfer data from Kafka to InfluxDB.  
 Grafana is used as a dashboard.  
 
 Hourly consumption by every client is periodically saved to MinIO for future analytics, by another Spark application.
