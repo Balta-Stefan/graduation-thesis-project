@@ -15,6 +15,6 @@ Spark produces the following aggregations:
 Another Spring boot application is used to transfer data from Kafka to InfluxDB.  
 Grafana is used as a dashboard.  
 
-Hourly consumption by every client is periodically saved to MinIO for future analytics, by another Spark application.
+Hourly consumption by every client is periodically saved to MinIO for future analytics, in Parquet format, by another Spark application.
 
 All components run within Docker.
