@@ -4,7 +4,7 @@
 
 This is a simplified energy monitoring system created to demonstrate stream and batch processing using Apache Spark.
 
-A data generator application is made using Spring boot.  
+A data generator application was made in Spring boot.  
 The generated data is sent to Apache Kafka.  
 Using Spark's structured streaming engine, the data is consumed and aggregated. Results are sent to Kafka.  
 Spark produces the following aggregations:
